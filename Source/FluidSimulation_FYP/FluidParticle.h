@@ -10,6 +10,13 @@ UCLASS()
 class FLUIDSIMULATION_FYP_API AFluidParticle : public AActor
 {
 	GENERATED_BODY()
+
+	UPROPERTY()
+	class UStaticMeshComponent* Mesh;
+
+	FVector m_position;
+	FVector m_velocity;
+	FVector m_force;
 	
 public:	
 	// Sets default values for this actor's properties
