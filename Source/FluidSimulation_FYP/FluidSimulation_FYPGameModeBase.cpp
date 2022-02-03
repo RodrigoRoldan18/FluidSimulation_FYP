@@ -8,15 +8,30 @@
 void AFluidSimulation_FYPGameModeBase::initSimulation()
 {
 	static FVector newParticleLocation;
-	const size_t particleLimitX = m_simulationDimensions.X / kParticleRadius;
-	const size_t particleLimitY = m_simulationDimensions.Y / kParticleRadius;
+	int particleLimitX = m_simulationDimensions.X / kParticleRadius;
+	int numColumn = 0;
+	int numLevel = 1;
+	int indexToResetPosition = 0;
 
-	resize(numberOfParticles);
+	resize(m_numOfParticles);
 
-	for (size_t i = 0; i < numberOfParticles; i++)
+	for (int i = 0; i < m_numOfParticles; i++)
 	{
-		newParticleLocation = FVector(kParticleRadius * i, kParticleRadius * i, 0.0f);
-		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(newParticleLocation, FRotator().ZeroRotator);
+		if (kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)) > m_simulationDimensions.X)
+		{
+			//move to new column
+			numColumn++;
+		}		
+		if (kParticleRadius * numColumn > m_simulationDimensions.Y)
+		{
+			//move to a new level
+			numLevel++;
+			numColumn = 0;
+			indexToResetPosition = i - 1;
+		}
+		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)), kParticleRadius * numColumn, kParticleRadius * numLevel);
+
+		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(ParticleBP ,newParticleLocation, FRotator().ZeroRotator);
 		m_particles.Push(newParticle);
 	}
 }
