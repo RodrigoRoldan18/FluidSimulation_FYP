@@ -11,7 +11,7 @@ class FLUIDSIMULATION_FYP_API AFluidParticle : public AActor
 {
 	GENERATED_BODY()
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	class UStaticMeshComponent* Mesh;
 
 	FVector m_position;

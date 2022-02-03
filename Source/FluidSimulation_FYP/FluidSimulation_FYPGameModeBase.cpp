@@ -4,12 +4,8 @@
 #include "FluidSimulation_FYPGameModeBase.h"
 #include "FluidParticle.h"
 
-AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
-{
-}
-
-AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase(size_t numberOfParticles, const FVector2D& _simDimensions)
-	: m_simulationDimensions(_simDimensions)
+//The default initialisation will have 1000 particles in an area of 500 by 500 from the origin.
+void AFluidSimulation_FYPGameModeBase::initSimulation()
 {
 	static FVector newParticleLocation;
 	const size_t particleLimitX = m_simulationDimensions.X / kParticleRadius;
@@ -37,4 +33,9 @@ const AFluidParticle* const AFluidSimulation_FYPGameModeBase::particles() const
 
 void AFluidSimulation_FYPGameModeBase::AddParticles(const TArray<class AFluidParticle>& newParticles)
 {
+}
+
+void AFluidSimulation_FYPGameModeBase::BeginPlay()
+{
+	initSimulation();
 }
