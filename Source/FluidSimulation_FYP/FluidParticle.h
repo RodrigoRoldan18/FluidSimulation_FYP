@@ -17,10 +17,23 @@ class FLUIDSIMULATION_FYP_API AFluidParticle : public AActor
 	FVector m_position;
 	FVector m_velocity;
 	FVector m_force;
+	float m_mass;
 	
 public:	
 	// Sets default values for this actor's properties
 	AFluidParticle();
+
+	//Setters
+	void SetParticlePosition(const FVector& _position) { m_position = _position; }
+	void SetParticleVelocity(const FVector& _velocity) { m_velocity = _velocity; }
+	void SetParticleForce(const FVector& _force) { m_force = _force; }
+	void SetParticleMass(float _mass) { m_mass = _mass; }
+
+	//Getters
+	const FVector& GetParticlePosition() const { return m_position; }
+	const FVector& GetParticleVelocity() const { return m_velocity; }
+	const FVector& GetParticleForce() const { return m_force; }
+	float GetParticleMass() const { return m_mass; }
 
 protected:
 	// Called when the game starts or when spawned

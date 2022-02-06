@@ -9,8 +9,8 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 {
 	resize(m_numOfParticles);
 
-	//(new FAutoDeleteAsyncTask<ParticleSpawnTask>())->StartBackgroundTask();
-	//CalcThread = new FThreadCalculator(m_numOfParticles);
+	//thread disabled for now
+	//CalcThread = new FThreadCalculator(m_numOfParticles, this);
 	//CurrentRunningThread = FRunnableThread::Create(CalcThread, TEXT("Calculation Thread"));
 
 	static FVector newParticleLocation;
@@ -19,7 +19,7 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 	int numLevel = 1;
 	int indexToResetPosition = 0;
 
-	for (int i = 0; i < m_numOfParticles; i++)
+	for (size_t i = 0; i < m_numOfParticles; i++)
 	{
 		if (kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)) > m_simulationDimensions.X)
 		{
@@ -38,7 +38,6 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(ParticleBP, newParticleLocation, FRotator().ZeroRotator);
 		m_particles.Push(newParticle);
 	}
-
 }
 
 void AFluidSimulation_FYPGameModeBase::resize(size_t newNumberOfParticles)
@@ -46,69 +45,63 @@ void AFluidSimulation_FYPGameModeBase::resize(size_t newNumberOfParticles)
 	m_particles.Reserve(newNumberOfParticles);
 }
 
-const AFluidParticle* const AFluidSimulation_FYPGameModeBase::particles() const
-{
-	return nullptr;
-}
-
-void AFluidSimulation_FYPGameModeBase::AddParticles(const TArray<class AFluidParticle>& newParticles)
-{
-}
-
 void AFluidSimulation_FYPGameModeBase::EndPlay(EEndPlayReason::Type EndPlayReason)
 {
+	Super::EndPlay(EndPlayReason);
+
+	if (CurrentRunningThread && CalcThread)
+	{
+		CurrentRunningThread->Suspend(true);
+		CalcThread->bStopThread = true;
+		CurrentRunningThread->Suspend(false);
+		CurrentRunningThread->Kill(false);
+		CurrentRunningThread->WaitForCompletion();
+		delete CalcThread;
+	}
 }
 
 void AFluidSimulation_FYPGameModeBase::BeginPlay()
 {
+	Super::BeginPlay();
+
 	initSimulation();
 }
 
-void AFluidSimulation_FYPGameModeBase::PrintCalcData()
+//---------------------------------------------------------------------------
+FThreadCalculator::FThreadCalculator(int32 _numOfParticles, AFluidSimulation_FYPGameModeBase* _gameMode)
 {
-	if (!m_particles.Num())
+	if (_numOfParticles > 0 && _gameMode)
 	{
-
+		NumOfParticles = _numOfParticles;
+		CurrentGameMode = _gameMode;
 	}
 }
 
-int32 AFluidSimulation_FYPGameModeBase::ProcessedCalculation()
+bool FThreadCalculator::Init()
 {
-	return int32();
+	bStopThread = false;
+	ParticlesSpawned = 0;
+
+	return true;
 }
 
-//---------------------------------------------------------------------------
-AThreadCalculator::AThreadCalculator(int32 _numOfParticles)
+uint32 FThreadCalculator::Run()
 {
+	while (!bStopThread)
+	{
+		if (ParticlesSpawned < NumOfParticles)
+		{
+			//spawn the particle here
+			ParticlesSpawned++;
+		}
+		else
+		{
+			bStopThread = true;
+		}
+	}
+	return 0;
 }
 
-bool AThreadCalculator::Init()
+void FThreadCalculator::Stop()
 {
-	return false;
-}
-
-uint32 AThreadCalculator::Run()
-{
-	return uint32();
-}
-
-void AThreadCalculator::Stop()
-{
-}
-
-//---------------------------------------------------------------------------
-
-ParticleSpawnTask::ParticleSpawnTask(int32 _numOfParticles)
-	: m_numOfParticles(_numOfParticles)
-{
-}
-
-ParticleSpawnTask::~ParticleSpawnTask()
-{
-	UE_LOG(LogTemp, Warning, TEXT("Task Finished!!"));
-}
-
-void ParticleSpawnTask::DoWork()
-{
-	
 }
