@@ -21,10 +21,14 @@ class FLUIDSIMULATION_FYP_API AFluidSimulation_FYPGameModeBase : public AGameMod
 private:	
 	TArray<class AFluidParticle*> m_particles;
 	const float kParticleRadius{ 10.0f }; // default size of UE4 sphere model.
+
+	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	int32 m_numOfParticles{ 1000 };
+
+	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	FVector2D m_simulationDimensions { FVector2D(100.0f) };
 
-	UPROPERTY(EditDefaultsOnly, Category = "Particle")
+	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	TSubclassOf<class AFluidParticle> ParticleBP;
 
 public:

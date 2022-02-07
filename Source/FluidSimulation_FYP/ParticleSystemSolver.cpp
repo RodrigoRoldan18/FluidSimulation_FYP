@@ -63,10 +63,7 @@ AParticleSystemSolver::AParticleSystemSolver()
 // Called when the game starts
 void AParticleSystemSolver::BeginPlay()
 {
-	Super::BeginPlay();
-
-	//m_newPositions.Init(FVector::ZeroVector, m_gameMode->GetNumberOfParticles());
-	//m_newVelocities.Init(FVector::ZeroVector, m_gameMode->GetNumberOfParticles());	
+	Super::BeginPlay();	
 }
 
 
