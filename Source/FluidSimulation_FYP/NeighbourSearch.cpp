@@ -113,6 +113,11 @@ UNeighbourSearch::UNeighbourSearch()
 	// ...
 }
 
+void UNeighbourSearch::initialiseNeighbourSearcher(const FIntVector& resolution, double gridSpacing)
+{
+	m_resolution = resolution;
+	m_gridSpacing = gridSpacing;
+}
 
 void UNeighbourSearch::build(const TArray<class AFluidParticle*>& points)
 {
@@ -137,7 +142,7 @@ void UNeighbourSearch::build(const TArray<class AFluidParticle*>& points)
 	}
 }
 
-void UNeighbourSearch::forEachNearbyPoint(const FVector& origin, double radius)
+void UNeighbourSearch::forEachNearbyPoint(const FVector& origin, double radius, const ForEachNearbyPointCallback& callback)
 {
 	if (m_buckets.Num() == 0)
 	{
@@ -160,8 +165,7 @@ void UNeighbourSearch::forEachNearbyPoint(const FVector& origin, double radius)
 			double rSquared = (m_particlePositions[pointIndex] - origin).SizeSquared();
 			if (rSquared <= queryRadiusSquared)
 			{
-				//callback
-
+				callback(pointIndex, m_particlePositions[pointIndex]);
 			}
 		}
 	}

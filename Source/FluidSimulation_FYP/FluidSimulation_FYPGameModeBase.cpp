@@ -3,6 +3,12 @@
 
 #include "FluidSimulation_FYPGameModeBase.h"
 #include "FluidParticle.h"
+#include "NeighbourSearch.h"
+
+AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
+{
+	m_neighbourSearcher = CreateDefaultSubobject<UNeighbourSearch>("NeighbourSearcher");
+}
 
 //The default initialisation will have 100 particles in an area of 40 by 40 from the origin.
 void AFluidSimulation_FYPGameModeBase::initSimulation()
@@ -43,6 +49,31 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 void AFluidSimulation_FYPGameModeBase::resize(size_t newNumberOfParticles)
 {
 	m_particles.Reserve(newNumberOfParticles);
+}
+
+void AFluidSimulation_FYPGameModeBase::BuildNeighbourSearcher(float maxSearchRadius)
+{
+	m_neighbourSearcher->initialiseNeighbourSearcher(kDefaultHashGridResolution, 2.0f * maxSearchRadius);
+	m_neighbourSearcher->build(m_particles);
+}
+
+void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists(float maxSearchRadius)
+{
+	m_neighbourLists.Reserve(GetNumberOfParticles());
+
+	auto particles = m_particles;
+	for (size_t i = 0; i < GetNumberOfParticles(); ++i)
+	{
+		FVector origin = particles[i]->GetParticlePosition();
+		m_neighbourLists[i].Empty();
+
+		m_neighbourSearcher->forEachNearbyPoint(origin, maxSearchRadius, [&](size_t j, const FVector&) {
+			if (i != j)
+			{
+				m_neighbourLists[i].Add(j);
+			}
+		});
+	}
 }
 
 void AFluidSimulation_FYPGameModeBase::EndPlay(EEndPlayReason::Type EndPlayReason)

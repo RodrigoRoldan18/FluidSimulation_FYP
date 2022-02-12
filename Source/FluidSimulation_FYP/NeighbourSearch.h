@@ -11,7 +11,10 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class FLUIDSIMULATION_FYP_API UNeighbourSearch : public UActorComponent
 {
 	GENERATED_BODY()
+public:
+	typedef TFunction<void(size_t, const FVector&)> ForEachNearbyPointCallback;
 
+private:
 	double m_gridSpacing = 1.0f;
 	FIntVector m_resolution = FIntVector(1, 1, 1);
 	TArray<TArray<size_t>> m_buckets;
@@ -26,8 +29,9 @@ public:
 	// Sets default values for this component's properties
 	UNeighbourSearch();
 
+	void initialiseNeighbourSearcher(const FIntVector& resolution, double gridSpacing);
 	void build(const TArray<class AFluidParticle*>& points);
-	void forEachNearbyPoint(const FVector& origin, double radius);
+	void forEachNearbyPoint(const FVector& origin, double radius, const ForEachNearbyPointCallback& callback);
 
 protected:
 	// Called when the game starts
