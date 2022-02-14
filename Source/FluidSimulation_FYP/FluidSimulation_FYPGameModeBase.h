@@ -48,6 +48,8 @@ public:
 	TArray<class AFluidParticle*>* GetParticleArrayPtr() { return &m_particles; }
 	float GetParticleRadius() const { return kParticleRadius; }
 
+	//Called every frame
+	virtual void Tick(float DeltaTime) override;
 	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 
 protected:

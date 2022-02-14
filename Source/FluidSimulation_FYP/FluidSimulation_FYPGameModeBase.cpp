@@ -7,6 +7,8 @@
 
 AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	m_neighbourSearcher = CreateDefaultSubobject<UNeighbourSearch>("NeighbourSearcher");
 }
 
@@ -74,6 +76,14 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists(float maxSearchRadius
 			}
 		});
 	}
+}
+
+void AFluidSimulation_FYPGameModeBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+
+	//UE_LOG(LogTemp, Warning, TEXT("TESTING GAMEMODE TICK"));
 }
 
 void AFluidSimulation_FYPGameModeBase::EndPlay(EEndPlayReason::Type EndPlayReason)

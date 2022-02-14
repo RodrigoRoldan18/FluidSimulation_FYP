@@ -15,6 +15,13 @@ void AParticleSystemSolver::beginAdvanceTimeStep()
 	m_newVelocities.Reserve(n);
 
 	//Clear forces
+	TArray<AFluidParticle*>* ptrParticleArray = m_gameMode->GetParticleArrayPtr();
+	FCriticalSection Mutex;
+	ParallelFor(n, [&](size_t i) {
+		Mutex.Lock();
+		(*ptrParticleArray)[i]->SetParticleForce(FVector());
+		Mutex.Unlock();
+		});
 }
 
 void AParticleSystemSolver::endAdvanceTimeStep()
@@ -27,6 +34,7 @@ void AParticleSystemSolver::endAdvanceTimeStep()
 	ParallelFor(n, [&](size_t i) {
 		Mutex.Lock();
 		(*ptrParticleArray)[i]->SetParticlePosition(m_newPositions[i]);
+		(*ptrParticleArray)[i]->SetActorLocation(m_newPositions[i]);
 		(*ptrParticleArray)[i]->SetParticleVelocity(m_newVelocities[i]);
 		Mutex.Unlock();
 		});
@@ -54,11 +62,18 @@ AParticleSystemSolver::AParticleSystemSolver()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = true;
 
 	m_gameMode = StaticCast<AFluidSimulation_FYPGameModeBase*>(UGameplayStatics::GetGameMode(GetWorld()));
 }
 
+
+void AParticleSystemSolver::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	OnAdvanceTimeStep(DeltaTime);
+}
 
 // Called when the game starts
 void AParticleSystemSolver::BeginPlay()
@@ -80,10 +95,10 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 
 void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
 {
-	accumulateExternalForces();
+	accumulateExternalForces(timeStepInSeconds);
 }
 
-void AParticleSystemSolver::accumulateExternalForces()
+void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 {
 	size_t n = m_gameMode->GetNumberOfParticles();
 	TArray<AFluidParticle*>* ptrParticleArray = m_gameMode->GetParticleArrayPtr();
@@ -94,7 +109,7 @@ void AParticleSystemSolver::accumulateExternalForces()
 		FVector force = (*ptrParticleArray)[i]->GetParticleMass() * m_gravity;
 
 		//Wind forces
-		FVector relativeVelocity = (*ptrParticleArray)[i]->GetParticleVelocity(); //sample the wind to the particle position
+		FVector relativeVelocity = (*ptrParticleArray)[i]->GetParticleVelocity() - (m_wind * timeStepInSeconds);
 
 		force += -m_dragCoefficient * relativeVelocity;
 

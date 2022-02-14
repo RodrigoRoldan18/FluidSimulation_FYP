@@ -31,13 +31,16 @@ public:
 	AParticleSystemSolver();
 	~AParticleSystemSolver() = default;
 
+	//Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
 	void OnAdvanceTimeStep(double timeIntervalInSeconds);
 	void accumulateForces(double timeStepInSeconds);
-	void accumulateExternalForces();
+	void accumulateExternalForces(double timeStepInSeconds);
 
 	//only external forces will be taken into account here.
 	void resolveCollision();		
