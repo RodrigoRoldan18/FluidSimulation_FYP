@@ -20,7 +20,7 @@ void AParticleSystemSolver::beginAdvanceTimeStep()
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		Mutex.Lock();
-		(*m_ptrParticles)[i]->SetParticleForce(FVector());
+		(*m_ptrParticles)[i]->SetParticleForce(FVector(0.0f));
 		Mutex.Unlock();
 		});
 }
@@ -97,10 +97,10 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		//Gravity
-		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * (m_gravity * timeStepInSeconds);
+		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * (m_kGravity * timeStepInSeconds);
 
 		//Wind forces
-		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + (m_wind * timeStepInSeconds);
+		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + (m_kWind * timeStepInSeconds);
 
 		force += -m_dragCoefficient * relativeVelocity;
 

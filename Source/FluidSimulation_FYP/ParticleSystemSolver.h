@@ -17,8 +17,8 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	void timeIntegration(double timeIntervalInSeconds);
 
-	FVector m_wind{ FVector(0.0f, -2.0f, 0.0f) }; //test wind 
-	FVector m_gravity{ FVector(0.0f, 0.0f, -9.8f) };
+	const FVector m_kWind{ FVector(1.0f, 0.0f, 0.0f) }; //test wind 
+	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
 	double m_dragCoefficient = 1e-4;
 
 	TArray<class AFluidParticle*>* m_ptrParticles;

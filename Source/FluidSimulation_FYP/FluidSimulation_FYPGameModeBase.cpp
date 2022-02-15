@@ -46,6 +46,7 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)), kParticleRadius * numColumn, kParticleRadius * numLevel);
 
 		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(ParticleBP, newParticleLocation, FRotator().ZeroRotator);
+		newParticle->SetParticlePosition(newParticleLocation);
 		m_particles.Push(newParticle);
 	}
 	//UE_LOG(LogTemp, Warning, TEXT("particles in the array at the end: %i"), m_particles.Num());
