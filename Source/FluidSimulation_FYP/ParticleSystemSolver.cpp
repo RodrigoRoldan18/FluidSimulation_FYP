@@ -10,16 +10,17 @@
 void AParticleSystemSolver::beginAdvanceTimeStep()
 {
 	//Allocate buffers
-	size_t n = m_gameMode->GetNumberOfParticles();
+	size_t n = m_ptrParticles->Num();
 	m_newPositions.Reserve(n);
 	m_newVelocities.Reserve(n);
+	m_newPositions.SetNumZeroed(n);
+	m_newVelocities.SetNumZeroed(n);
 
 	//Clear forces
-	TArray<AFluidParticle*>* ptrParticleArray = m_gameMode->GetParticleArrayPtr();
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		Mutex.Lock();
-		(*ptrParticleArray)[i]->SetParticleForce(FVector());
+		(*m_ptrParticles)[i]->SetParticleForce(FVector());
 		Mutex.Unlock();
 		});
 }
@@ -27,33 +28,31 @@ void AParticleSystemSolver::beginAdvanceTimeStep()
 void AParticleSystemSolver::endAdvanceTimeStep()
 {
 	//Update data
-	size_t n = m_gameMode->GetNumberOfParticles();
-	TArray<AFluidParticle*>* ptrParticleArray = m_gameMode->GetParticleArrayPtr();
+	size_t n = m_ptrParticles->Num();
 
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		Mutex.Lock();
-		(*ptrParticleArray)[i]->SetParticlePosition(m_newPositions[i]);
-		(*ptrParticleArray)[i]->SetActorLocation(m_newPositions[i]);
-		(*ptrParticleArray)[i]->SetParticleVelocity(m_newVelocities[i]);
+		(*m_ptrParticles)[i]->SetParticlePosition(m_newPositions[i]);
+		(*m_ptrParticles)[i]->SetActorLocation(m_newPositions[i]);
+		(*m_ptrParticles)[i]->SetParticleVelocity(m_newVelocities[i]);
 		Mutex.Unlock();
 		});
 }
 
 void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
 {
-	size_t n = m_gameMode->GetNumberOfParticles();
-	TArray<AFluidParticle*>* ptrParticleArray = m_gameMode->GetParticleArrayPtr();
+	size_t n = m_ptrParticles->Num();
 
 	ParallelFor(n, [&](size_t i) {
 		//Integrate velocity first
 		FVector& newVelocity = m_newVelocities[i];
-		newVelocity =(*ptrParticleArray)[i]->GetParticleVelocity() + timeIntervalInSeconds *
-			(*ptrParticleArray)[i]->GetParticleForce() / (*ptrParticleArray)[i]->GetParticleMass();
+		newVelocity =(*m_ptrParticles)[i]->GetParticleVelocity() + timeIntervalInSeconds *
+			(*m_ptrParticles)[i]->GetParticleForce() / (*m_ptrParticles)[i]->GetParticleMass();
 
 		//Integrate position.
 		FVector& newPosition = m_newPositions[i];
-		newPosition = (*ptrParticleArray)[i]->GetParticlePosition() + timeIntervalInSeconds * newVelocity;
+		newPosition = (*m_ptrParticles)[i]->GetParticlePosition() + timeIntervalInSeconds * newVelocity;
 		});
 }
 
@@ -62,28 +61,21 @@ AParticleSystemSolver::AParticleSystemSolver()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryActorTick.bCanEverTick = true;
-
-	m_gameMode = StaticCast<AFluidSimulation_FYPGameModeBase*>(UGameplayStatics::GetGameMode(GetWorld()));
+	PrimaryActorTick.bCanEverTick = false;
 }
 
-
-void AParticleSystemSolver::Tick(float DeltaTime)
+void AParticleSystemSolver::initPhysicsSolver(TArray<AFluidParticle*>* ptrParticles)
 {
-	Super::Tick(DeltaTime);
-
-	OnAdvanceTimeStep(DeltaTime);
+	m_ptrParticles = ptrParticles;
 }
-
-// Called when the game starts
-void AParticleSystemSolver::BeginPlay()
-{
-	Super::BeginPlay();	
-}
-
 
 void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 {
+	if (m_ptrParticles == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("particles pointer isn't initialised"));
+		return;
+	}
 	beginAdvanceTimeStep();
 
 	accumulateForces(timeIntervalInSeconds);
@@ -100,32 +92,32 @@ void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
 
 void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 {
-	size_t n = m_gameMode->GetNumberOfParticles();
-	TArray<AFluidParticle*>* ptrParticleArray = m_gameMode->GetParticleArrayPtr();
+	size_t n = m_ptrParticles->Num();
 
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		//Gravity
-		FVector force = (*ptrParticleArray)[i]->GetParticleMass() * m_gravity;
+		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * (m_gravity * timeStepInSeconds);
 
 		//Wind forces
-		FVector relativeVelocity = (*ptrParticleArray)[i]->GetParticleVelocity() - (m_wind * timeStepInSeconds);
+		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + (m_wind * timeStepInSeconds);
 
 		force += -m_dragCoefficient * relativeVelocity;
 
 		Mutex.Lock();
-		(*ptrParticleArray)[i]->SetParticleForce((*ptrParticleArray)[i]->GetParticleForce() + force);
+		(*m_ptrParticles)[i]->SetParticleForce((*m_ptrParticles)[i]->GetParticleForce() + force);
 		Mutex.Unlock();
 		});
 }
 
 void AParticleSystemSolver::resolveCollision()
 {
-	size_t n = m_gameMode->GetNumberOfParticles();
-	TArray<AFluidParticle*>* ptrParticleArray = m_gameMode->GetParticleArrayPtr();
-	const float kParticleRadius = m_gameMode->GetParticleRadius();
+	//whitebox function, we will get to external collisions later
 
-	ParallelFor(n, [&](size_t i) {
-		//resolve collision
-		});
+	//size_t n = m_ptrParticles->Num();
+	//const float kParticleRadius = m_gameMode->GetParticleRadius();
+
+	//ParallelFor(n, [&](size_t i) {
+	//	//resolve collision
+	//	});
 }

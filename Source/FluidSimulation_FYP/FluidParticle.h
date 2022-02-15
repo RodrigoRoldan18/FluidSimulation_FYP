@@ -17,7 +17,7 @@ class FLUIDSIMULATION_FYP_API AFluidParticle : public AActor
 	FVector m_position;
 	FVector m_velocity;
 	FVector m_force;
-	float m_mass;
+	float m_mass{ 1.0f };
 	
 public:	
 	// Sets default values for this actor's properties

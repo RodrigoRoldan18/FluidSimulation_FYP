@@ -17,10 +17,11 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	void timeIntegration(double timeIntervalInSeconds);
 
-	class AFluidSimulation_FYPGameModeBase* m_gameMode;
 	FVector m_wind{ FVector(0.0f, -2.0f, 0.0f) }; //test wind 
 	FVector m_gravity{ FVector(0.0f, 0.0f, -9.8f) };
 	double m_dragCoefficient = 1e-4;
+
+	TArray<class AFluidParticle*>* m_ptrParticles;
 
 	//these are needed for post processing
 	TArray<FVector> m_newPositions;
@@ -31,14 +32,10 @@ public:
 	AParticleSystemSolver();
 	~AParticleSystemSolver() = default;
 
-	//Called every frame
-	virtual void Tick(float DeltaTime) override;
+	void initPhysicsSolver(TArray<class AFluidParticle*>* ptrParticles);
+	void OnAdvanceTimeStep(double timeIntervalInSeconds);
 
 protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
-	void OnAdvanceTimeStep(double timeIntervalInSeconds);
 	void accumulateForces(double timeStepInSeconds);
 	void accumulateExternalForces(double timeStepInSeconds);
 

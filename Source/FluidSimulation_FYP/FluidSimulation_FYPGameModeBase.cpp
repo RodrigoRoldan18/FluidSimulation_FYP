@@ -4,15 +4,17 @@
 #include "FluidSimulation_FYPGameModeBase.h"
 #include "FluidParticle.h"
 #include "NeighbourSearch.h"
+#include "ParticleSystemSolver.h"
 
 AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	m_neighbourSearcher = CreateDefaultSubobject<UNeighbourSearch>("NeighbourSearcher");
+	m_physicsSolver = CreateDefaultSubobject<AParticleSystemSolver>("PhysicsSolver");
 }
 
-//The default initialisation will have 100 particles in an area of 40 by 40 from the origin.
+//The default initialisation will have 1000 particles in an area of 100 by 100 from the origin.
 void AFluidSimulation_FYPGameModeBase::initSimulation()
 {
 	resize(m_numOfParticles);
@@ -46,6 +48,7 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(ParticleBP, newParticleLocation, FRotator().ZeroRotator);
 		m_particles.Push(newParticle);
 	}
+	//UE_LOG(LogTemp, Warning, TEXT("particles in the array at the end: %i"), m_particles.Num());
 }
 
 void AFluidSimulation_FYPGameModeBase::resize(size_t newNumberOfParticles)
@@ -82,7 +85,7 @@ void AFluidSimulation_FYPGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
+	m_physicsSolver->OnAdvanceTimeStep(DeltaTime);
 	//UE_LOG(LogTemp, Warning, TEXT("TESTING GAMEMODE TICK"));
 }
 
@@ -106,6 +109,7 @@ void AFluidSimulation_FYPGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	initSimulation();
+	m_physicsSolver->initPhysicsSolver(&m_particles);
 }
 
 //---------------------------------------------------------------------------

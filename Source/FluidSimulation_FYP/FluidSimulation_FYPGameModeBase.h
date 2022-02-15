@@ -9,7 +9,8 @@
 #include "FluidSimulation_FYPGameModeBase.generated.h"
 
 /**
- FOR NOW I WILL USE THE GAME MODE AS THE PARTICLE SYSTEM DATA MANAGER 
+ FOR NOW I WILL USE THE GAME MODE AS THE PARTICLE SYSTEM DATA MANAGER
+ AND THE MAIN SIMULATION THREAD
  */
 UCLASS()
 class FLUIDSIMULATION_FYP_API AFluidSimulation_FYPGameModeBase : public AGameModeBase
@@ -19,9 +20,11 @@ class FLUIDSIMULATION_FYP_API AFluidSimulation_FYPGameModeBase : public AGameMod
 	friend class FThreadCalculator;
 	
 private:	
-	TArray<class AFluidParticle*> m_particles;
 	const float kParticleRadius{ 10.0f }; // default size of UE4 sphere model is 100 but I scaled it down.
 	const FIntVector kDefaultHashGridResolution{ FIntVector(10) };
+
+	TArray<class AFluidParticle*> m_particles;
+	class AParticleSystemSolver* m_physicsSolver;
 	class UNeighbourSearch* m_neighbourSearcher;
 	TArray<TArray<size_t>> m_neighbourLists;
 
