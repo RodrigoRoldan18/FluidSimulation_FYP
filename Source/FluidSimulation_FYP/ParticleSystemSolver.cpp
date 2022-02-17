@@ -97,10 +97,10 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		//Gravity
-		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * (m_kGravity * timeStepInSeconds);
+		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * m_kGravity;
 
 		//Wind forces
-		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + (m_kWind * timeStepInSeconds);
+		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() - (m_kWind * timeStepInSeconds);
 
 		force += -m_dragCoefficient * relativeVelocity;
 
