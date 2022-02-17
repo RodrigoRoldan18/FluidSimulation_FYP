@@ -131,12 +131,13 @@ void UNeighbourSearch::build(const TArray<class AFluidParticle*>& points)
 
 	//Allocate memory chuncks
 	m_buckets.Reserve(m_resolution.X * m_resolution.Y * m_resolution.Z);
+	m_buckets.SetNumZeroed(m_resolution.X * m_resolution.Y * m_resolution.Z);
 	m_particlePositions.Reserve(points.Num());
 
 	//Put points into buckets
 	for (size_t i = 0; i < points.Num(); i++)
 	{
-		m_particlePositions[i] = points[i]->GetParticlePosition();
+		m_particlePositions.Add(points[i]->GetParticlePosition());
 		size_t key = getHashKeyFromPosition(m_particlePositions[i]);
 		m_buckets[key].Push(i);
 	}
@@ -169,13 +170,4 @@ void UNeighbourSearch::forEachNearbyPoint(const FVector& origin, double radius, 
 			}
 		}
 	}
-}
-
-// Called when the game starts
-void UNeighbourSearch::BeginPlay()
-{
-	Super::BeginPlay();
-
-	// ...
-	
 }

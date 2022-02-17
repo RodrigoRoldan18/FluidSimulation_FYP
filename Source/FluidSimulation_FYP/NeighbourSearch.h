@@ -31,9 +31,5 @@ public:
 
 	void initialiseNeighbourSearcher(const FIntVector& resolution, double gridSpacing);
 	void build(const TArray<class AFluidParticle*>& points);
-	void forEachNearbyPoint(const FVector& origin, double radius, const ForEachNearbyPointCallback& callback);
-
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;		
+	void forEachNearbyPoint(const FVector& origin, double radius, const ForEachNearbyPointCallback& callback);	
 };

@@ -66,6 +66,7 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourSearcher(float maxSearchRad
 void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists(float maxSearchRadius)
 {
 	m_neighbourLists.Reserve(GetNumberOfParticles());
+	m_neighbourLists.SetNumZeroed(GetNumberOfParticles());
 
 	auto particles = m_particles;
 	for (size_t i = 0; i < GetNumberOfParticles(); ++i)
@@ -77,6 +78,10 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists(float maxSearchRadius
 			if (i != j)
 			{
 				m_neighbourLists[i].Add(j);
+				if (i == 303)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
+				}				
 			}
 		});
 	}
@@ -111,6 +116,8 @@ void AFluidSimulation_FYPGameModeBase::BeginPlay()
 
 	initSimulation();
 	m_physicsSolver->initPhysicsSolver(&m_particles);
+	BuildNeighbourSearcher(kParticleRadius);
+	BuildNeighbourLists(kParticleRadius);
 }
 
 //---------------------------------------------------------------------------
