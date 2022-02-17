@@ -17,7 +17,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	void timeIntegration(double timeIntervalInSeconds);
 
-	const FVector m_kWind{ FVector(1.0f, 0.0f, 0.0f) }; //test wind 
+	const FVector m_kWind{ FVector(10.0f, 0.0f, 0.0f) }; //test wind (vector field)
 	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
 	double m_dragCoefficient = 1e-4;
 
@@ -34,6 +34,11 @@ public:
 
 	void initPhysicsSolver(TArray<class AFluidParticle*>* ptrParticles);
 	void OnAdvanceTimeStep(double timeIntervalInSeconds);
+
+	//Vector fields include wind, water current... even colours
+	const FVector SampleVectorField(const FVector& _subject, const FVector& _vectorField) const;
+	//Scalar fields include temperature, pressure
+	const double SampleScalarField(const FVector& _subject) const;
 
 protected:
 	void accumulateForces(double timeStepInSeconds);

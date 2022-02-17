@@ -85,6 +85,18 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 	endAdvanceTimeStep();
 }
 
+const FVector AParticleSystemSolver::SampleVectorField(const FVector& _subject, const FVector& _vectorField) const
+{
+	return FVector(FMath::Sin(_subject.X) * FMath::Sin(_vectorField.Y),
+		FMath::Sin(_subject.Y) * FMath::Sin(_vectorField.Z),
+		FMath::Sin(_subject.Z) * FMath::Sin(_vectorField.X));
+}
+
+const double AParticleSystemSolver::SampleScalarField(const FVector& _subject) const
+{
+	return FMath::Sin(_subject.X) * FMath::Sin(_subject.Y) * FMath::Sin(_subject.Z);
+}
+
 void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
 {
 	accumulateExternalForces(timeStepInSeconds);
@@ -100,7 +112,7 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * m_kGravity;
 
 		//Wind forces
-		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() - (m_kWind * timeStepInSeconds);
+		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() - SampleVectorField((*m_ptrParticles)[i]->GetParticlePosition(), m_kWind);
 
 		force += -m_dragCoefficient * relativeVelocity;
 
