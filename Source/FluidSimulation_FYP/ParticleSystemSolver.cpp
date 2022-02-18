@@ -5,6 +5,7 @@
 #include "FluidSimulation_FYPGameModeBase.h"
 #include "FluidParticle.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Runtime/Core/Public/Async/ParallelFor.h"
 
 void AParticleSystemSolver::beginAdvanceTimeStep()
@@ -87,9 +88,14 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 
 const FVector AParticleSystemSolver::SampleVectorField(const FVector& _subject, const FVector& _vectorField) const
 {
+	//this uses radians
 	return FVector(FMath::Sin(_subject.X) * FMath::Sin(_vectorField.Y),
 		FMath::Sin(_subject.Y) * FMath::Sin(_vectorField.Z),
-		FMath::Sin(_subject.Z) * FMath::Sin(_vectorField.X));
+		FMath::Sin(_subject.Z) * FMath::Sin(_vectorField.Z));
+
+	/*return FVector(UKismetMathLibrary::DegSin(_subject.X) * UKismetMathLibrary::DegSin(_vectorField.Y),
+		UKismetMathLibrary::DegSin(_subject.Y) * UKismetMathLibrary::DegSin(_vectorField.Z),
+		UKismetMathLibrary::DegSin(_subject.Z) * UKismetMathLibrary::DegSin(_vectorField.X));*/
 }
 
 const double AParticleSystemSolver::SampleScalarField(const FVector& _subject) const
@@ -112,7 +118,13 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * m_kGravity;
 
 		//Wind forces
-		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() - SampleVectorField((*m_ptrParticles)[i]->GetParticlePosition(), m_kWind);
+		FVector sampleVectorFieldResult = SampleVectorField((*m_ptrParticles)[i]->GetParticlePosition(), m_kWind);
+
+		if (i == 3)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("The vector field result for particle %i is x: %f y: %f z: %f"), i, sampleVectorFieldResult.X, sampleVectorFieldResult.Y, sampleVectorFieldResult.Z);
+		}		
+		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() - sampleVectorFieldResult;
 
 		force += -m_dragCoefficient * relativeVelocity;
 

@@ -18,10 +18,9 @@ size_t UNeighbourSearch::getHashKeyFromPosition(const FVector& pos) const
 FIntVector UNeighbourSearch::getBucketIndex(const FVector& pos) const
 {
 	FIntVector bucketIndex;
-	//need to round these values down
-	bucketIndex.X = pos.X / m_gridSpacing;
-	bucketIndex.Y = pos.Y / m_gridSpacing;
-	bucketIndex.Z = pos.Z / m_gridSpacing;
+	bucketIndex.X = FMath::Floor(pos.X / m_gridSpacing);
+	bucketIndex.Y = FMath::Floor(pos.Y / m_gridSpacing);
+	bucketIndex.Z = FMath::Floor(pos.Z / m_gridSpacing);
 	return bucketIndex;
 }
 
