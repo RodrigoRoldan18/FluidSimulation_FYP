@@ -16,8 +16,8 @@ UCLASS()
 class FLUIDSIMULATION_FYP_API AFluidSimulation_FYPGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
-private:	
+
+private:
 	const float kParticleRadius{ 10.0f }; // default size of UE4 sphere model is 100 but I scaled it down.
 	const FIntVector kDefaultHashGridResolution{ FIntVector(10) };
 
@@ -25,6 +25,14 @@ private:
 	class AParticleSystemSolver* m_physicsSolver;
 	class UNeighbourSearch* m_neighbourSearcher;
 	TArray<TArray<size_t>> m_neighbourLists;
+
+	//water density in kg/m^3
+	double m_targetDensity;
+	//target spacing in meters
+	double m_targetSpacing{ 100.0f }; //this should be 0.1f
+	//kernel radius in meters
+	double m_kernelRadius;
+	double m_kernelRadiusOverTargetSpacing{ 1800.0f }; //this should be 1.8f
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	int32 m_numOfParticles{ 1000 };
@@ -45,6 +53,10 @@ public:
 	void BuildNeighbourSearcher(float maxSearchRadius);
 	void BuildNeighbourLists(float maxSearchRadius);
 
+	FVector Interpolate(const FVector& origin, const TArray<FVector>& values) const;
+	void UpdateDensities();
+	double sumOfKernelNearby(const FVector& origin) const;
+
 	size_t GetNumberOfParticles() const { return m_particles.Num(); }
 	TArray<class AFluidParticle*>* GetParticleArrayPtr() { return &m_particles; }
 
@@ -61,12 +73,14 @@ struct FSphStdKernel
 {
 	GENERATED_BODY()
 
+	//kernel radius
 	double h;
 
 	FSphStdKernel();
 	explicit FSphStdKernel(double kernelRadius);
 	FSphStdKernel(const FSphStdKernel& other);
 	double operator()(double distance) const;
+	double FirstDerivative(double distance) const;
 };
 
 inline FSphStdKernel::FSphStdKernel() : h(0) {}
@@ -74,6 +88,7 @@ inline FSphStdKernel::FSphStdKernel(double kernelRadius) : h(kernelRadius) {}
 inline FSphStdKernel::FSphStdKernel(const FSphStdKernel& other) : h(other.h) {}
 inline double FSphStdKernel::operator()(double distance) const
 {
+	//distance between particles (r)
 	if (distance * distance >= h * h)
 	{
 		return 0.0f;

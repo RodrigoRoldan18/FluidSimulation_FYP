@@ -17,6 +17,7 @@ class FLUIDSIMULATION_FYP_API AFluidParticle : public AActor
 	FVector m_position;
 	FVector m_velocity{ FVector(0.0f, 0.0f, 10.0f) };
 	FVector m_force{ 0.0f };
+	double m_density;
 	
 public:	
 	static const double kRadius;
@@ -29,11 +30,13 @@ public:
 	void SetParticlePosition(const FVector& _position) { m_position = _position; }
 	void SetParticleVelocity(const FVector& _velocity) { m_velocity = _velocity; }
 	void SetParticleForce(const FVector& _force) { m_force = _force; }
+	void SetParticleDensity(double _density) { m_density = _density; }
 
 	//Getters
 	const FVector& GetParticlePosition() const { return m_position; }
 	const FVector& GetParticleVelocity() const { return m_velocity; }
 	const FVector& GetParticleForce() const { return m_force; }
+	double GetParticleDensity() const { return m_density; }
 
 protected:
 	// Called when the game starts or when spawned

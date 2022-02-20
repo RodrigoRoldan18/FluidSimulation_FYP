@@ -10,6 +10,8 @@ AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
+	m_kernelRadius = m_kernelRadiusOverTargetSpacing * m_targetSpacing;
+
 	m_neighbourSearcher = CreateDefaultSubobject<UNeighbourSearch>("NeighbourSearcher");
 	m_physicsSolver = CreateDefaultSubobject<AParticleSystemSolver>("PhysicsSolver");
 }
@@ -81,6 +83,47 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists(float maxSearchRadius
 			}
 		});
 	}
+}
+
+FVector AFluidSimulation_FYPGameModeBase::Interpolate(const FVector& origin, const TArray<FVector>& values) const
+{
+	FVector sum;
+	FSphStdKernel kernel(m_kernelRadius);
+	const double mass = m_particles[0]->kMass;
+
+	m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t i, const FVector& neighbourPos) {
+		double dist = FVector::Distance(origin, neighbourPos);
+		//more weight the closer to the origin.
+		double weight = mass / m_particles[i]->GetParticleDensity() * kernel(dist);
+		sum += weight * values[i];
+		});
+
+	return sum;
+}
+
+//helper function to remove the infinite recursion from the function above.
+//this function needs to be called first to initialise the densities
+void AFluidSimulation_FYPGameModeBase::UpdateDensities()
+{
+	size_t n = GetNumberOfParticles();
+	FCriticalSection Mutex;
+	ParallelFor(n, [&](size_t i) {
+		double sum = sumOfKernelNearby(m_particles[i]->GetParticlePosition());
+		Mutex.Lock();
+		m_particles[i]->SetParticleDensity(m_particles[i]->kMass * sum);
+		Mutex.Unlock();
+		});
+}
+
+double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin) const
+{
+	double sum = 0.0f;
+	FSphStdKernel kernel(m_kernelRadius);
+	m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t i, const FVector& neighbourPos) {
+		double dist = FVector::Distance(origin, neighbourPos);
+		sum += kernel(dist);
+		});
+	return sum;
 }
 
 void AFluidSimulation_FYPGameModeBase::Tick(float DeltaTime)
