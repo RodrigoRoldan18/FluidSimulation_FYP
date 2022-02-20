@@ -48,8 +48,8 @@ void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
 	ParallelFor(n, [&](size_t i) {
 		//Integrate velocity first
 		FVector& newVelocity = m_newVelocities[i];
-		newVelocity =(*m_ptrParticles)[i]->GetParticleVelocity() + timeIntervalInSeconds *
-			(*m_ptrParticles)[i]->GetParticleForce() / (*m_ptrParticles)[i]->GetParticleMass();
+		newVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + timeIntervalInSeconds *
+			(*m_ptrParticles)[i]->GetParticleForce() / (*m_ptrParticles)[i]->kMass;
 
 		//Integrate position.
 		FVector& newPosition = m_newPositions[i];
@@ -115,7 +115,7 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		//Gravity
-		FVector force = (*m_ptrParticles)[i]->GetParticleMass() * m_kGravity;
+		FVector force = (*m_ptrParticles)[i]->kMass * m_kGravity;
 
 		//Wind forces
 		FVector sampleVectorFieldResult = SampleVectorField((*m_ptrParticles)[i]->GetParticlePosition(), m_kWind);
@@ -138,10 +138,14 @@ void AParticleSystemSolver::resolveCollision()
 {
 	//whitebox function, we will get to external collisions later
 
-	//size_t n = m_ptrParticles->Num();
-	//const float kParticleRadius = m_gameMode->GetParticleRadius();
+	if (m_collider != nullptr)
+	{
+		size_t n = m_ptrParticles->Num();
+		const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
 
-	//ParallelFor(n, [&](size_t i) {
-	//	//resolve collision
-	//	});
+		ParallelFor(n, [&](size_t i) {
+			//resolve collision
+			//m_collider->ResolveCollision(m_newPositions[i], m_newVelocities[i], kParticleRadius, m_restitutionCoefficient, &m_newPositions[i], &m_newVelocities[i]);
+			});
+	}
 }

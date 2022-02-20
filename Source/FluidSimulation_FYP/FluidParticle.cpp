@@ -3,11 +3,15 @@
 
 #include "FluidParticle.h"
 
+//static variables definition
+const double AFluidParticle::kRadius = 10.0f;
+const double AFluidParticle::kMass = 1.0f;
+
 // Sets default values
 AFluidParticle::AFluidParticle()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ParticleDebugMesh"));
 	RootComponent = Mesh;
@@ -20,11 +24,3 @@ void AFluidParticle::BeginPlay()
 	Super::BeginPlay();
 	
 }
-
-// Called every frame
-void AFluidParticle::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-

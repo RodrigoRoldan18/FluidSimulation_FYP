@@ -19,13 +19,19 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	const FVector m_kWind{ FVector(10.0f, 0.0f, 0.0f) }; //test wind (vector field)
 	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
-	double m_dragCoefficient = 1e-4;
+	double m_restitutionCoefficient{ 0.0f };
+	double m_dragCoefficient{ 1e-4 };
 
 	TArray<class AFluidParticle*>* m_ptrParticles;
 
 	//these are needed for post processing
 	TArray<FVector> m_newPositions;
 	TArray<FVector> m_newVelocities;
+
+	//rigid body obstacle in the simulation
+	class Collider* m_collider;
+	//Where the particles spawn from (like a fountain)
+	class ParticleEmitter* m_emitter;
 
 public:	
 	// Sets default values for this component's properties

@@ -47,7 +47,6 @@ public:
 
 	size_t GetNumberOfParticles() const { return m_particles.Num(); }
 	TArray<class AFluidParticle*>* GetParticleArrayPtr() { return &m_particles; }
-	float GetParticleRadius() const { return kParticleRadius; }
 
 	//Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -56,3 +55,32 @@ public:
 protected:
 	virtual void BeginPlay() override;
 };
+
+USTRUCT()
+struct FSphStdKernel
+{
+	GENERATED_BODY()
+
+	double h;
+
+	FSphStdKernel();
+	explicit FSphStdKernel(double kernelRadius);
+	FSphStdKernel(const FSphStdKernel& other);
+	double operator()(double distance) const;
+};
+
+inline FSphStdKernel::FSphStdKernel() : h(0) {}
+inline FSphStdKernel::FSphStdKernel(double kernelRadius) : h(kernelRadius) {}
+inline FSphStdKernel::FSphStdKernel(const FSphStdKernel& other) : h(other.h) {}
+inline double FSphStdKernel::operator()(double distance) const
+{
+	if (distance * distance >= h * h)
+	{
+		return 0.0f;
+	}
+	else
+	{
+		double x = 1.0f - distance * distance / (h * h);
+		return 315.0f / (64.0f * 3.14f * (h * h * h)) * x * x * x;
+	}
+}
