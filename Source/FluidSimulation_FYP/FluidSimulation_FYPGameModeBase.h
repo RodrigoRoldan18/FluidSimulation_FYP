@@ -16,8 +16,6 @@ UCLASS()
 class FLUIDSIMULATION_FYP_API AFluidSimulation_FYPGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-
-	friend class FThreadCalculator;
 	
 private:	
 	const float kParticleRadius{ 10.0f }; // default size of UE4 sphere model is 100 but I scaled it down.
@@ -57,33 +55,4 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
-
-	class FThreadCalculator* CalcThread = nullptr;
-	FRunnableThread* CurrentRunningThread = nullptr;
-};
-
-
-//------------------------------------------------------------------------------------
-//Forward declarations
-class FRunnableThread;
-class AFluidParticle;
-
-class FThreadCalculator : public FRunnable
-{
-public:
-	// Sets default values for this actor's properties
-	FThreadCalculator(int32 _numOfParticles, AFluidSimulation_FYPGameModeBase* _gameMode);
-
-	bool bStopThread;
-
-	virtual bool Init();
-	virtual uint32 Run();
-	virtual void Stop();
-
-private:
-	int32 NumOfParticles;
-	int32 ParticlesSpawned;
-	AFluidSimulation_FYPGameModeBase* CurrentGameMode;
-	AFluidParticle* CurrentParticle;
-
 };
