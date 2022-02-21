@@ -126,6 +126,47 @@ double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin
 	return sum;
 }
 
+//returns the symmetric gradient for the input values for a given particle with index i
+FVector AFluidSimulation_FYPGameModeBase::GradientAt(size_t i, const TArray<double>& values) const
+{
+	FVector sum;
+	const TArray<size_t>& neighbours = m_neighbourLists[i];
+	FVector origin = m_particles[i]->GetParticlePosition();
+	FSphStdKernel kernel(m_kernelRadius); //this should be the spiky kernel instead of the standard one
+
+	for (size_t j : neighbours)
+	{
+		FVector neighbourPos = m_particles[j]->GetParticlePosition();
+		double dist = FVector::Distance(origin, neighbourPos);
+		if (dist > 0.0f)
+		{
+			FVector dir = (neighbourPos - origin) / dist;
+			sum += m_particles[i]->GetParticleDensity() * m_particles[i]->kMass * 
+				((values[i] / (m_particles[i]->GetParticleDensity() * m_particles[i]->GetParticleDensity())) +
+				values[j] / (m_particles[j]->GetParticleDensity() * m_particles[j]->GetParticleDensity())) * kernel.Gradient(dist, dir);
+		}
+	}
+
+	return sum;
+}
+
+double AFluidSimulation_FYPGameModeBase::LaplacianAt(size_t i, const TArray<double>& values) const
+{
+	double sum = 0.0f;
+	const TArray<size_t>& neighbours = m_neighbourLists[i];
+	FVector origin = m_particles[i]->GetParticlePosition();
+	FSphStdKernel kernel(m_kernelRadius); //this should be the spiky kernel instead of the standard one.
+
+	for (size_t j : neighbours)
+	{
+		FVector neighbourPos = m_particles[j]->GetParticlePosition();
+		double dist = FVector::Distance(origin, neighbourPos);
+		sum += m_particles[j]->kMass * (values[j] - values[i]) / m_particles[j]->GetParticleDensity() * kernel.SecondDerivative(dist);		
+	}
+
+	return sum;
+}
+
 void AFluidSimulation_FYPGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
