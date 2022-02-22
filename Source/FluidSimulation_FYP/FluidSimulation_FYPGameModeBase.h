@@ -53,6 +53,7 @@ public:
 	void BuildNeighbourSearcher(float maxSearchRadius);
 	void BuildNeighbourLists(float maxSearchRadius);
 
+	//Density computation
 	FVector Interpolate(const FVector& origin, const TArray<FVector>& values) const;
 	void UpdateDensities();
 	double sumOfKernelNearby(const FVector& origin) const;
@@ -69,71 +70,3 @@ public:
 protected:
 	virtual void BeginPlay() override;
 };
-
-USTRUCT()
-struct FSphStdKernel
-{
-	GENERATED_BODY()
-
-	//kernel radius
-	double h;
-	double h2;
-	double h3;
-	double h5;
-
-	FSphStdKernel();
-	explicit FSphStdKernel(double kernelRadius);
-	FSphStdKernel(const FSphStdKernel& other);
-	double operator()(double distance) const;
-	double FirstDerivative(double distance) const;
-	double SecondDerivative(double distance) const;
-	FVector Gradient(double distance, const FVector& directionToCentre) const;
-};
-
-inline FSphStdKernel::FSphStdKernel() : h(0), h2(0), h3(0), h5(0) {}
-inline FSphStdKernel::FSphStdKernel(double kernelRadius) : h(kernelRadius), h2(h * h), h3(h2 * h), h5(h2 * h3) {}
-inline FSphStdKernel::FSphStdKernel(const FSphStdKernel& other) : h(other.h), h2(other.h2), h3(other.h3), h5(other.h5) {}
-inline double FSphStdKernel::operator()(double distance) const
-{
-	//distance between particles (r)
-	if (distance * distance >= h * h)
-	{
-		return 0.0f;
-	}
-	else
-	{
-		double x = 1.0f - distance * distance / h2;
-		return 315.0f / (64.0f * 3.14f * h3) * x * x * x;
-	}
-}
-
-inline double FSphStdKernel::FirstDerivative(double distance) const
-{
-	if (distance >= h)
-	{
-		return 0.0f;
-	}
-	else
-	{
-		double x = 1.0f - distance * distance / h2;
-		return -945.0f / (32.0f * 3.14f * h5) * distance * x * x;
-	}
-}
-
-inline double FSphStdKernel::SecondDerivative(double distance) const
-{
-	if (distance * distance >= h2)
-	{
-		return 0.0f;
-	}
-	else
-	{
-		double x = distance * distance / h2;
-		return 945.0f / (32.0f * 3.14f * h5) * (1 - x) * (3 * x - 1);
-	}
-}
-
-inline FVector FSphStdKernel::Gradient(double distance, const FVector& directionToCentre) const
-{
-	return -FirstDerivative(distance) * directionToCentre;
-}

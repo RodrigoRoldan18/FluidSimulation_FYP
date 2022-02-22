@@ -5,6 +5,7 @@
 #include "FluidParticle.h"
 #include "NeighbourSearch.h"
 #include "ParticleSystemSolver.h"
+#include "Kernels.h"
 
 AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 {
@@ -132,7 +133,7 @@ FVector AFluidSimulation_FYPGameModeBase::GradientAt(size_t i, const TArray<doub
 	FVector sum;
 	const TArray<size_t>& neighbours = m_neighbourLists[i];
 	FVector origin = m_particles[i]->GetParticlePosition();
-	FSphStdKernel kernel(m_kernelRadius); //this should be the spiky kernel instead of the standard one
+	FSphSpikyKernel kernel(m_kernelRadius);
 
 	for (size_t j : neighbours)
 	{
@@ -155,7 +156,7 @@ double AFluidSimulation_FYPGameModeBase::LaplacianAt(size_t i, const TArray<doub
 	double sum = 0.0f;
 	const TArray<size_t>& neighbours = m_neighbourLists[i];
 	FVector origin = m_particles[i]->GetParticlePosition();
-	FSphStdKernel kernel(m_kernelRadius); //this should be the spiky kernel instead of the standard one.
+	FSphSpikyKernel kernel(m_kernelRadius);
 
 	for (size_t j : neighbours)
 	{
