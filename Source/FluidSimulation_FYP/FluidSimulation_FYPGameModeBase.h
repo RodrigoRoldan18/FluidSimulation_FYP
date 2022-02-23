@@ -27,7 +27,7 @@ private:
 	TArray<TArray<size_t>> m_neighbourLists;
 
 	//water density in kg/m^3
-	double m_targetDensity;
+	double m_targetDensity = 1000.0f;
 	//target spacing in meters
 	double m_targetSpacing{ 100.0f }; //this should be 0.1f
 	//kernel radius in meters
@@ -50,8 +50,8 @@ public:
 	void initSimulation();
 	void resize(size_t newNumberOfParticles);
 
-	void BuildNeighbourSearcher(float maxSearchRadius);
-	void BuildNeighbourLists(float maxSearchRadius);
+	void BuildNeighbourSearcher();
+	void BuildNeighbourLists();
 
 	//Density computation
 	FVector Interpolate(const FVector& origin, const TArray<FVector>& values) const;
@@ -62,6 +62,9 @@ public:
 
 	size_t GetNumberOfParticles() const { return m_particles.Num(); }
 	TArray<class AFluidParticle*>* GetParticleArrayPtr() { return &m_particles; }
+	double GetTargetDensity() const { return m_targetDensity; }
+	double GetKernelRadius() const { return m_kernelRadius; }
+	TArray<TArray<size_t>>* GetNeighbourLists() { return &m_neighbourLists; }
 
 	//Called every frame
 	virtual void Tick(float DeltaTime) override;

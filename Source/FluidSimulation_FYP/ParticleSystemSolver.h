@@ -13,7 +13,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	//these two functions are the pre- and postprocessing functions.
 	void beginAdvanceTimeStep();
-	void endAdvanceTimeStep();
+	void endAdvanceTimeStep(double timeIntervalInSeconds);
 
 	void timeIntegration(double timeIntervalInSeconds);
 
@@ -22,7 +22,19 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	double m_restitutionCoefficient{ 0.0f };
 	double m_dragCoefficient{ 1e-4 };
 
+	//exponent component of EOS(Tait's equation)
+	double m_eosExponent{ 7.0f };
+	//zero means clamping, one means do nothing
+	double m_negaitvePressureScale{ 0.0f };
+	double m_viscosityCoefficient{ 0.01f };
+	//this is a minimum "safety-net" for SPH which is quite sensitive to the parameters.
+	double m_pseudoViscossityCoefficient{ 10.0f };
+	//Speed of sound in the medium to determine the stiffness of the system.
+	//This should be the actual speed of sound in the fluid but a lower value is better to trace-off performance and compressibility
+	double m_speedOfSound{ 100.0f };
+
 	TArray<class AFluidParticle*>* m_ptrParticles;
+	class AFluidSimulation_FYPGameModeBase* m_gameMode;
 
 	//these are needed for post processing
 	TArray<FVector> m_newPositions;
@@ -38,7 +50,7 @@ public:
 	AParticleSystemSolver();
 	~AParticleSystemSolver() = default;
 
-	void initPhysicsSolver(TArray<class AFluidParticle*>* ptrParticles);
+	void initPhysicsSolver(TArray<class AFluidParticle*>* ptrParticles, class AFluidSimulation_FYPGameModeBase* gameMode);
 	void OnAdvanceTimeStep(double timeIntervalInSeconds);
 
 	//Vector fields include wind, water current... even colours
@@ -49,6 +61,12 @@ public:
 protected:
 	void accumulateForces(double timeStepInSeconds);
 	void accumulateExternalForces(double timeStepInSeconds);
+	void accumulateNonPressureForces(double timeStepInSeconds);
+	void accumulatePressureForce(double timeStepInSeconds);
+	void computePressure();
+	void accumulateViscosityForce();
+	void computePseudoViscosity(double timeStepInSeconds);
+	double computePressureFromEOS(double density, double targetDensity, double eosScale, double eosExponent, double negativePressureScale);
 
 	//only external forces will be taken into account here.
 	void resolveCollision();		

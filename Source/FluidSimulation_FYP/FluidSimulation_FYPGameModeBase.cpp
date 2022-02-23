@@ -56,13 +56,13 @@ void AFluidSimulation_FYPGameModeBase::resize(size_t newNumberOfParticles)
 	m_particles.Reserve(newNumberOfParticles);
 }
 
-void AFluidSimulation_FYPGameModeBase::BuildNeighbourSearcher(float maxSearchRadius)
+void AFluidSimulation_FYPGameModeBase::BuildNeighbourSearcher()
 {
-	m_neighbourSearcher->initialiseNeighbourSearcher(kDefaultHashGridResolution, 2.0f * maxSearchRadius);
+	m_neighbourSearcher->initialiseNeighbourSearcher(kDefaultHashGridResolution, 2.0f * kParticleRadius); //kParticleRadius should be m_kernelRadius instead
 	m_neighbourSearcher->build(m_particles);
 }
 
-void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists(float maxSearchRadius)
+void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 {
 	m_neighbourLists.Reserve(GetNumberOfParticles());
 	m_neighbourLists.SetNumZeroed(GetNumberOfParticles());
@@ -73,7 +73,7 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists(float maxSearchRadius
 		FVector origin = particles[i]->GetParticlePosition();
 		m_neighbourLists[i].Empty();
 
-		m_neighbourSearcher->forEachNearbyPoint(origin, maxSearchRadius, [&](size_t j, const FVector&) {
+		m_neighbourSearcher->forEachNearbyPoint(origin, kParticleRadius, [&](size_t j, const FVector&) { //kParticleRadius should be m_kernelRadius instead
 			if (i != j)
 			{
 				m_neighbourLists[i].Add(j);
@@ -186,7 +186,7 @@ void AFluidSimulation_FYPGameModeBase::BeginPlay()
 	Super::BeginPlay();
 
 	initSimulation();
-	m_physicsSolver->initPhysicsSolver(&m_particles);
-	BuildNeighbourSearcher(kParticleRadius);
-	BuildNeighbourLists(kParticleRadius);
+	m_physicsSolver->initPhysicsSolver(&m_particles, this);
+	BuildNeighbourSearcher();
+	BuildNeighbourLists();
 }
