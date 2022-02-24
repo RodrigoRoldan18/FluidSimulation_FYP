@@ -5,6 +5,7 @@
 #include "FluidSimulation_FYPGameModeBase.h"
 #include "FluidParticle.h"
 #include "Kernels.h"
+#include "Collider.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Runtime/Core/Public/Async/ParallelFor.h"
@@ -51,7 +52,8 @@ void AParticleSystemSolver::endAdvanceTimeStep(double timeIntervalInSeconds)
 		Mutex.Unlock();
 		});
 
-	computePseudoViscosity(timeIntervalInSeconds);
+	//DISABLED UNTIL FIXED THREADING AND CONSTANT VALUES ISSUES
+	//computePseudoViscosity(timeIntervalInSeconds);
 }
 
 void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
@@ -297,7 +299,7 @@ void AParticleSystemSolver::resolveCollision()
 		const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
 
 		ParallelFor(n, [&](size_t i) {
-			//resolve collision
+			//resolve collision DISABLED UNTIL FULLY IMPLEMENTED
 			//m_collider->ResolveCollision(m_newPositions[i], m_newVelocities[i], kParticleRadius, m_restitutionCoefficient, &m_newPositions[i], &m_newVelocities[i]);
 			});
 	}
