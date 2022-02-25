@@ -26,7 +26,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	double m_eosExponent{ 7.0 };
 	//zero means clamping, one means do nothing
 	double m_negaitvePressureScale{ 0.0 };
-	double m_viscosityCoefficient{ 0.01 };
+	double m_viscosityCoefficient{ 0.01 }; //original value is 0.01 but testing calculations suggest to use 0.1
 	//this is a minimum "safety-net" for SPH which is quite sensitive to the parameters.
 	double m_pseudoViscossityCoefficient{ 10.0 };
 	//Speed of sound in the medium to determine the stiffness of the system.

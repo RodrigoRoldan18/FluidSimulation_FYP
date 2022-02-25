@@ -18,7 +18,7 @@ class FLUIDSIMULATION_FYP_API AFluidSimulation_FYPGameModeBase : public AGameMod
 	GENERATED_BODY()
 
 private:
-	const float kParticleRadius{ 10.0f }; // default size of UE4 sphere model is 100 but I scaled it down.
+	const float kParticleRadius{ 1.0f }; // default size of UE4 sphere model is 100 but I scaled it down.
 	const FIntVector kDefaultHashGridResolution{ FIntVector(10) };
 
 	TArray<class AFluidParticle*> m_particles;
@@ -29,16 +29,16 @@ private:
 	//water density in kg/m^3
 	double m_targetDensity = 1000.0;
 	//target spacing in meters
-	double m_targetSpacing{ 100.0 }; //this should be 0.1f
+	double m_targetSpacing{ 10.0 }; //this should be 0.1
 	//kernel radius in meters
 	double m_kernelRadius;
-	double m_kernelRadiusOverTargetSpacing{ 1800.0 }; //this should be 1.8f
+	double m_kernelRadiusOverTargetSpacing{ 180.0 }; //this should be 1.8
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	int32 m_numOfParticles{ 1000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	FVector2D m_simulationDimensions { FVector2D(100.0f) };
+	FVector2D m_simulationDimensions { FVector2D(10.0f) };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	TSubclassOf<class AFluidParticle> ParticleBP;

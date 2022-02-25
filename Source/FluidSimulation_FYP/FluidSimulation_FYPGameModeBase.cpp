@@ -187,6 +187,4 @@ void AFluidSimulation_FYPGameModeBase::BeginPlay()
 
 	initSimulation();
 	m_physicsSolver->initPhysicsSolver(&m_particles, this);
-	BuildNeighbourSearcher();
-	BuildNeighbourLists();
 }

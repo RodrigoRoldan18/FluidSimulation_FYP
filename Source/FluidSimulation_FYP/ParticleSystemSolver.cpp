@@ -137,10 +137,10 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 		//Wind forces
 		FVector sampleVectorFieldResult = SampleVectorField((*m_ptrParticles)[i]->GetParticlePosition(), m_kWind);
 
-		if (i == 3)
+		/*if (i == 3)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("The vector field result for particle %i is x: %f y: %f z: %f"), i, sampleVectorFieldResult.X, sampleVectorFieldResult.Y, sampleVectorFieldResult.Z);
-		}		
+		}*/
 		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() - sampleVectorFieldResult;
 
 		force += -m_dragCoefficient * relativeVelocity;
@@ -277,7 +277,7 @@ void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
 
 double AParticleSystemSolver::computePressureFromEOS(double density, double targetDensity, double eosScale, double eosExponent, double negativePressureScale)
 {
-	double p = eosScale / eosExponent * (FMath::Pow((density / targetDensity), eosExponent) - 1.0f);
+	double p = eosScale / eosExponent * (FMath::Pow((density / targetDensity), eosExponent) - 1.0);
 
 	//Negative pressure scaling
 	if (p < 0)

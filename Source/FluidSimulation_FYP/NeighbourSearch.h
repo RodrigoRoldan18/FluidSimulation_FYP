@@ -15,8 +15,8 @@ public:
 	typedef TFunction<void(size_t, const FVector&)> ForEachNearbyPointCallback;
 
 private:
-	double m_gridSpacing = 1.0;
-	FIntVector m_resolution = FIntVector(1, 1, 1);
+	double m_gridSpacing = 2.0; //radius * 2
+	FIntVector m_resolution = FIntVector(64, 64, 64); //default says 1 but calculations suggest 64
 	TArray<TArray<size_t>> m_buckets;
 	TArray<FVector> m_particlePositions;
 
