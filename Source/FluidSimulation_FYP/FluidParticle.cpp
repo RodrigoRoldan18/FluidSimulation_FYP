@@ -4,8 +4,8 @@
 #include "FluidParticle.h"
 
 //static variables definition
-const double AFluidParticle::kRadius = 10.0f; //this should be 1e-3
-const double AFluidParticle::kMass = 1.0f; //this should be 1e-3
+const double AFluidParticle::kRadius = 10.0; //this should be 1e-3
+const double AFluidParticle::kMass = 1.0; //this should be 1e-3
 
 // Sets default values
 AFluidParticle::AFluidParticle()

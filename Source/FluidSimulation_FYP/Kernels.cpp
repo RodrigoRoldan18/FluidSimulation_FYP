@@ -11,12 +11,12 @@ double FSphStdKernel::operator()(double distance) const
 	//distance between particles (r)
 	if (distance * distance >= h * h)
 	{
-		return 0.0f;
+		return 0.0;
 	}
 	else
 	{
-		double x = 1.0f - distance * distance / h2;
-		return 315.0f / (64.0f * 3.14f * h3) * x * x * x;
+		double x = 1.0 - distance * distance / h2;
+		return 315.0 / (64.0 * 3.14 * h3) * x * x * x;
 	}
 }
 
@@ -24,12 +24,12 @@ double FSphStdKernel::FirstDerivative(double distance) const
 {
 	if (distance >= h)
 	{
-		return 0.0f;
+		return 0.0;
 	}
 	else
 	{
-		double x = 1.0f - distance * distance / h2;
-		return -945.0f / (32.0f * 3.14f * h5) * distance * x * x;
+		double x = 1.0 - distance * distance / h2;
+		return -945.0 / (32.0 * 3.14 * h5) * distance * x * x;
 	}
 }
 
@@ -37,12 +37,12 @@ double FSphStdKernel::SecondDerivative(double distance) const
 {
 	if (distance * distance >= h2)
 	{
-		return 0.0f;
+		return 0.0;
 	}
 	else
 	{
 		double x = distance * distance / h2;
-		return 945.0f / (32.0f * 3.14f * h5) * (1 - x) * (3 * x - 1);
+		return 945.0 / (32.0 * 3.14 * h5) * (1 - x) * (3 * x - 1);
 	}
 }
 
@@ -60,12 +60,12 @@ double FSphSpikyKernel::operator()(double distance) const
 {
 	if (distance >= h)
 	{
-		return 0.0f;
+		return 0.0;
 	}
 	else
 	{
 		double x = 1.0 - distance / h;
-		return 15.0f / (3.14f * h3) * x * x * x;
+		return 15.0 / (3.14 * h3) * x * x * x;
 	}
 }
 
@@ -73,12 +73,12 @@ double FSphSpikyKernel::FirstDerivative(double distance) const
 {
 	if (distance >= h)
 	{
-		return 0.0f;
+		return 0.0;
 	}
 	else
 	{
-		double x = 1.0f - distance / h;
-		return -45.0f / (3.14f * h4) * x * x;
+		double x = 1.0 - distance / h;
+		return -45.0 / (3.14 * h4) * x * x;
 	}
 }
 
@@ -86,12 +86,12 @@ double FSphSpikyKernel::SecondDerivative(double distance) const
 {
 	if (distance >= h)
 	{
-		return 0.0f;
+		return 0.0;
 	}
 	else
 	{
-		double x = 1.0f - distance / h;
-		return 90.0f / (3.14f * h5) * x;
+		double x = 1.0 - distance / h;
+		return 90.0 / (3.14 * h5) * x;
 	}
 }
 

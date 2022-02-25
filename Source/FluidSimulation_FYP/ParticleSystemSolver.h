@@ -19,19 +19,19 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	const FVector m_kWind{ FVector(10.0f, 0.0f, 0.0f) }; //test wind (vector field)
 	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
-	double m_restitutionCoefficient{ 0.0f };
+	double m_restitutionCoefficient{ 0.0 };
 	double m_dragCoefficient{ 1e-4 };
 
 	//exponent component of EOS(Tait's equation)
-	double m_eosExponent{ 7.0f };
+	double m_eosExponent{ 7.0 };
 	//zero means clamping, one means do nothing
-	double m_negaitvePressureScale{ 0.0f };
-	double m_viscosityCoefficient{ 0.01f };
+	double m_negaitvePressureScale{ 0.0 };
+	double m_viscosityCoefficient{ 0.01 };
 	//this is a minimum "safety-net" for SPH which is quite sensitive to the parameters.
-	double m_pseudoViscossityCoefficient{ 10.0f };
+	double m_pseudoViscossityCoefficient{ 10.0 };
 	//Speed of sound in the medium to determine the stiffness of the system.
 	//This should be the actual speed of sound in the fluid but a lower value is better to trace-off performance and compressibility
-	double m_speedOfSound{ 100.0f };
+	double m_speedOfSound{ 100.0 };
 
 	TArray<class AFluidParticle*>* m_ptrParticles;
 	class AFluidSimulation_FYPGameModeBase* m_gameMode;

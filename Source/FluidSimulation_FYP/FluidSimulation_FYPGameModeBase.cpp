@@ -118,7 +118,7 @@ void AFluidSimulation_FYPGameModeBase::UpdateDensities()
 
 double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin) const
 {
-	double sum = 0.0f;
+	double sum = 0.0;
 	FSphStdKernel kernel(m_kernelRadius);
 	m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t i, const FVector& neighbourPos) {
 		double dist = FVector::Distance(origin, neighbourPos);
@@ -139,7 +139,7 @@ FVector AFluidSimulation_FYPGameModeBase::GradientAt(size_t i, const TArray<doub
 	{
 		FVector neighbourPos = m_particles[j]->GetParticlePosition();
 		double dist = FVector::Distance(origin, neighbourPos);
-		if (dist > 0.0f)
+		if (dist > 0.0)
 		{
 			FVector dir = (neighbourPos - origin) / dist;
 			sum += m_particles[i]->GetParticleDensity() * m_particles[i]->kMass * 
@@ -153,7 +153,7 @@ FVector AFluidSimulation_FYPGameModeBase::GradientAt(size_t i, const TArray<doub
 
 double AFluidSimulation_FYPGameModeBase::LaplacianAt(size_t i, const TArray<double>& values) const
 {
-	double sum = 0.0f;
+	double sum = 0.0;
 	const TArray<size_t>& neighbours = m_neighbourLists[i];
 	FVector origin = m_particles[i]->GetParticlePosition();
 	FSphSpikyKernel kernel(m_kernelRadius);

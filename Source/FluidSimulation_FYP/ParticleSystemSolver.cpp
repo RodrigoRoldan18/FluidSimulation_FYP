@@ -52,8 +52,7 @@ void AParticleSystemSolver::endAdvanceTimeStep(double timeIntervalInSeconds)
 		Mutex.Unlock();
 		});
 
-	//DISABLED UNTIL FIXED THREADING AND CONSTANT VALUES ISSUES
-	//computePseudoViscosity(timeIntervalInSeconds);
+	computePseudoViscosity(timeIntervalInSeconds);
 }
 
 void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
@@ -172,7 +171,7 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 		for (size_t j : neighbours)
 		{
 			double dist = FVector::Distance((*m_ptrParticles)[i]->GetParticlePosition(), (*m_ptrParticles)[j]->GetParticlePosition());
-			if (dist > 0.0f)
+			if (dist > 0.0)
 			{
 				FVector dir = ((*m_ptrParticles)[j]->GetParticlePosition() - (*m_ptrParticles)[i]->GetParticlePosition()) / dist;
 				FVector pressureForceResult = (*m_ptrParticles)[i]->GetParticleForce() - massSquared *
@@ -256,7 +255,7 @@ void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
 		weightSum += wi;
 		smoothedVelocity += wi * (*m_ptrParticles)[i]->GetParticleVelocity();
 
-		if (weightSum > 0.0f)
+		if (weightSum > 0.0)
 		{
 			smoothedVelocity /= weightSum;
 		}

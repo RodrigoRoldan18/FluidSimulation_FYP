@@ -27,12 +27,12 @@ private:
 	TArray<TArray<size_t>> m_neighbourLists;
 
 	//water density in kg/m^3
-	double m_targetDensity = 1000.0f;
+	double m_targetDensity = 1000.0;
 	//target spacing in meters
-	double m_targetSpacing{ 100.0f }; //this should be 0.1f
+	double m_targetSpacing{ 100.0 }; //this should be 0.1f
 	//kernel radius in meters
 	double m_kernelRadius;
-	double m_kernelRadiusOverTargetSpacing{ 1800.0f }; //this should be 1.8f
+	double m_kernelRadiusOverTargetSpacing{ 1800.0 }; //this should be 1.8f
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	int32 m_numOfParticles{ 1000 };
