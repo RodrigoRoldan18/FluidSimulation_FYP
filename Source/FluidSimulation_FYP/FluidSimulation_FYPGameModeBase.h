@@ -19,7 +19,7 @@ class FLUIDSIMULATION_FYP_API AFluidSimulation_FYPGameModeBase : public AGameMod
 
 private:
 	const float kParticleRadius{ 1.0f }; // default size of UE4 sphere model is 100 but I scaled it down.
-	const FIntVector kDefaultHashGridResolution{ FIntVector(10) };
+	const FIntVector kDefaultHashGridResolution{ FIntVector(64) }; //this was set to 10 before
 
 	TArray<class AFluidParticle*> m_particles;
 	class AParticleSystemSolver* m_physicsSolver;

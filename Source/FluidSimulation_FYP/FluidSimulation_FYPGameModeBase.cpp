@@ -77,7 +77,7 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 			if (i != j)
 			{
 				m_neighbourLists[i].Add(j);
-				if (i == 303)
+				if (i == 723)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
 				}				

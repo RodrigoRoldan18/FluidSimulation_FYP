@@ -35,8 +35,7 @@ size_t UNeighbourSearch::getHashKeyFromBucketIndex(const FIntVector& bucketIndex
 	if (wrappedIndex.Y < 0) { wrappedIndex.Y += m_resolution.Y; }
 	if (wrappedIndex.Z < 0) { wrappedIndex.Z += m_resolution.Z; }
 
-	//there might be some issues with the way Unreal has its direction axis.
-	return static_cast<size_t>((wrappedIndex.Z * m_resolution.Y + wrappedIndex.Y) * m_resolution.X + wrappedIndex.X);
+	return static_cast<size_t>((wrappedIndex.Y * m_resolution.Z + wrappedIndex.Z) * m_resolution.X + wrappedIndex.X);
 }
 
 void UNeighbourSearch::getNearbyKeys(const FVector& pos, size_t* nearbyKeys) const
@@ -64,37 +63,35 @@ void UNeighbourSearch::getNearbyKeys(const FVector& pos, size_t* nearbyKeys) con
 		nearbyBucketIndices[7].X -= 1;
 	}
 
-	if ((originIndex.Y + 0.5f) * m_gridSpacing <= pos.Y)
-	{
-		nearbyBucketIndices[2].Y += 1;
-		nearbyBucketIndices[3].Y += 1;
-		nearbyBucketIndices[6].Y += 1;
-		nearbyBucketIndices[7].Y += 1;
-	}
-	else
-	{
-		nearbyBucketIndices[2].Y -= 1;
-		nearbyBucketIndices[3].Y -= 1;
-		nearbyBucketIndices[6].Y -= 1;
-		nearbyBucketIndices[7].Y -= 1;
-	}
-
 	if ((originIndex.Z + 0.5f) * m_gridSpacing <= pos.Z)
 	{
-		nearbyBucketIndices[1].Z += 1;
+		nearbyBucketIndices[2].Z += 1;
 		nearbyBucketIndices[3].Z += 1;
-		nearbyBucketIndices[5].Z += 1;
+		nearbyBucketIndices[6].Z += 1;
 		nearbyBucketIndices[7].Z += 1;
 	}
 	else
 	{
-		nearbyBucketIndices[1].Z -= 1;
+		nearbyBucketIndices[2].Z -= 1;
 		nearbyBucketIndices[3].Z -= 1;
-		nearbyBucketIndices[5].Z -= 1;
+		nearbyBucketIndices[6].Z -= 1;
 		nearbyBucketIndices[7].Z -= 1;
 	}
 
-	//this might be wrong due to Unreal's change of direction axis.
+	if ((originIndex.Y + 0.5f) * m_gridSpacing <= pos.Y)
+	{
+		nearbyBucketIndices[1].Y += 1;
+		nearbyBucketIndices[3].Y += 1;
+		nearbyBucketIndices[5].Y += 1;
+		nearbyBucketIndices[7].Y += 1;
+	}
+	else
+	{
+		nearbyBucketIndices[1].Y -= 1;
+		nearbyBucketIndices[3].Y -= 1;
+		nearbyBucketIndices[5].Y -= 1;
+		nearbyBucketIndices[7].Y -= 1;
+	}
 
 	for (int i = 0; i < 8; i++)
 	{
