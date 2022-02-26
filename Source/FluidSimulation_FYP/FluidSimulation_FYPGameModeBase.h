@@ -35,10 +35,10 @@ private:
 	double m_kernelRadiusOverTargetSpacing{ 180.0 }; //this should be 1.8
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	int32 m_numOfParticles{ 1000 };
+	int32 m_numOfParticles{ 5000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	FVector2D m_simulationDimensions { FVector2D(10.0f) };
+	FVector2D m_simulationDimensions { FVector2D(100.0f) };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	TSubclassOf<class AFluidParticle> ParticleBP;
@@ -54,7 +54,10 @@ public:
 	void BuildNeighbourLists();
 
 	//Density computation
+	//Returns interpolated vector data. Could be used for velocity and acceleration.
 	FVector Interpolate(const FVector& origin, const TArray<FVector>& values) const;
+	//Returns interpolated scalar data. Could be used for density and pressure.
+	double Interpolate(const FVector& origin, const TArray<double>& values) const;
 	void UpdateDensities();
 	double sumOfKernelNearby(const FVector& origin) const;
 	FVector GradientAt(size_t i, const TArray<double>& values) const;

@@ -33,6 +33,8 @@ void AParticleSystemSolver::beginAdvanceTimeStep()
 		UE_LOG(LogTemp, Warning, TEXT("game mode pointer isn't initialised"));
 		return;
 	}
+
+	//STAGE 1 - MEASURE DENSITY WITH PARTICLES' CURRENT LOCATIONS
 	m_gameMode->BuildNeighbourSearcher();
 	m_gameMode->BuildNeighbourLists();
 	m_gameMode->UpdateDensities();
@@ -52,11 +54,14 @@ void AParticleSystemSolver::endAdvanceTimeStep(double timeIntervalInSeconds)
 		Mutex.Unlock();
 		});
 
-	computePseudoViscosity(timeIntervalInSeconds);
+	//this will dampen any noticeable noises (DISABLED FOR NOW BECAUSE IT'S CAUSING ISSUES)
+	//computePseudoViscosity(timeIntervalInSeconds);
 }
 
 void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
 {
+	//STAGE 6 - PERFORM TIME INTEGRATION
+
 	size_t n = m_ptrParticles->Num();
 
 	ParallelFor(n, [&](size_t i) {
@@ -96,7 +101,9 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 
 	accumulateForces(timeIntervalInSeconds);
 	timeIntegration(timeIntervalInSeconds);
-	resolveCollision();
+	
+	//Resolve collisions disabled until fully implemented
+	//resolveCollision();
 
 	endAdvanceTimeStep(timeIntervalInSeconds);
 }
@@ -104,9 +111,9 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 const FVector AParticleSystemSolver::SampleVectorField(const FVector& _subject, const FVector& _vectorField) const
 {
 	//this uses radians
-	return FVector(FMath::Sin(_subject.X) * FMath::Sin(_vectorField.Y),
-		FMath::Sin(_subject.Y) * FMath::Sin(_vectorField.Z),
-		FMath::Sin(_subject.Z) * FMath::Sin(_vectorField.Z));
+	return FVector(FMath::Sin(_subject.X) * FMath::Sin(_vectorField.Z),
+		FMath::Sin(_subject.Z) * FMath::Sin(_vectorField.Y),
+		FMath::Sin(_subject.Y) * FMath::Sin(_vectorField.X));
 
 	/*return FVector(UKismetMathLibrary::DegSin(_subject.X) * UKismetMathLibrary::DegSin(_vectorField.Y),
 		UKismetMathLibrary::DegSin(_subject.Y) * UKismetMathLibrary::DegSin(_vectorField.Z),
@@ -120,13 +127,17 @@ const double AParticleSystemSolver::SampleScalarField(const FVector& _subject) c
 
 void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
 {
-	accumulateExternalForces(timeStepInSeconds);
-	accumulateNonPressureForces(timeStepInSeconds);
+	//STAGE 2 & 3
 	accumulatePressureForce(timeStepInSeconds);
+	//STAGE 4
+	accumulateNonPressureForces(timeStepInSeconds);
+	//STAGE 5
+	accumulateExternalForces(timeStepInSeconds);
 }
 
 void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 {
+	//STAGE 5 - COMPUTE THE GRAVITY AND OTHER EXTERNAL FORCES
 	size_t n = m_ptrParticles->Num();
 
 	FCriticalSection Mutex;
@@ -159,6 +170,9 @@ void AParticleSystemSolver::accumulateNonPressureForces(double timeStepInSeconds
 void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 {
 	computePressure();
+
+	//STAGE 3 - COMPUTE THE GRADIENT PRESSURE FORCE
+
 	//do the accumulatepressureforce function here
 	size_t n = m_ptrParticles->Num();
 
@@ -188,9 +202,10 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 
 void AParticleSystemSolver::computePressure()
 {
+	//STAGE 2 - COMPUTE THE PRESSURE BASED ON THE DENSITY
 	size_t n = m_ptrParticles->Num();
 	const double targetDensity = m_gameMode->GetTargetDensity();
-	const double eosScale = targetDensity * ((m_speedOfSound * m_speedOfSound) / m_eosExponent);
+	const double eosScale = targetDensity * (m_speedOfSound * m_speedOfSound) / m_eosExponent;
 	
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
@@ -203,6 +218,7 @@ void AParticleSystemSolver::computePressure()
 
 void AParticleSystemSolver::accumulateViscosityForce()
 {
+	//STAGE 4 - COMPUTE THE VISCOSITY FORCE
 	size_t n = m_ptrParticles->Num();
 
 	const double massSquared = (*m_ptrParticles)[0]->kMass * (*m_ptrParticles)[0]->kMass;
@@ -240,11 +256,6 @@ void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
 		const auto& neighbours = (*m_gameMode->GetNeighbourLists())[i];
 		for (size_t j : neighbours)
 		{
-			if (j > n)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("there is an error with the neighbour list. Apparently, the index is %f"), j);
-				continue;
-			}
 			double dist = FVector::Distance((*m_ptrParticles)[i]->GetParticlePosition(), (*m_ptrParticles)[j]->GetParticlePosition());
 			double wj = mass / (*m_ptrParticles)[j]->GetParticleDensity() * kernel(dist);
 			weightSum += wj;
@@ -298,8 +309,7 @@ void AParticleSystemSolver::resolveCollision()
 		const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
 
 		ParallelFor(n, [&](size_t i) {
-			//resolve collision DISABLED UNTIL FULLY IMPLEMENTED
-			//m_collider->ResolveCollision(m_newPositions[i], m_newVelocities[i], kParticleRadius, m_restitutionCoefficient, &m_newPositions[i], &m_newVelocities[i]);
+			m_collider->ResolveCollision(m_newPositions[i], m_newVelocities[i], kParticleRadius, m_restitutionCoefficient, &m_newPositions[i], &m_newVelocities[i]);
 			});
 	}
 }

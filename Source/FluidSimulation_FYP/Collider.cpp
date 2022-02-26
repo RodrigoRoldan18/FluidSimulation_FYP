@@ -11,8 +11,6 @@ ACollider::ACollider()
 
 	m_mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = m_mesh;
-
-	m_surface = CreateDefaultSubobject<USurface>("SurfaceCollider");
 }
 
 void ACollider::ResolveCollision(const FVector& currentPosition, const FVector& currentVelocity, double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity)
@@ -60,16 +58,16 @@ void ACollider::ResolveCollision(const FVector& currentPosition, const FVector& 
 
 FVector ACollider::VelocityAt(const FVector& point) const
 {
-	FVector r = point - m_surface->m_transform.GetTranslation();
+	FVector r = point - m_mesh->GetComponentTransform().GetTranslation(); //if we have to use the relative location we would use m_mesh->GetRelativeLocation();
 	return m_linearVelocity + FVector::CrossProduct(m_angularVelocity, r);
 }
 
 void ACollider::GetClosestPoint(USurface* surface, const FVector& queryPoint, ColliderQueryResult* result) const
 {
-	result->distance = surface->ClosestDistance(queryPoint);
-	result->point = surface->ClosestPoint(queryPoint);
-	result->normal = surface->ClosestNormal(queryPoint);
-	result->velocity = VelocityAt(queryPoint);
+	result->distance = surface->ClosestDistance(queryPoint); //Get closest distance from querypoint to the mesh
+	result->point = surface->ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
+	result->normal = surface->ClosestNormal(queryPoint); //get the normal
+	result->velocity = VelocityAt(queryPoint); //
 
 	//I AM OVERCOMPLICATING MYSELF. TAKE A STEP BACK AND RECONSIDER THE APPROACH.
 	//might not need to create a surface class. The mesh should be enough to help.

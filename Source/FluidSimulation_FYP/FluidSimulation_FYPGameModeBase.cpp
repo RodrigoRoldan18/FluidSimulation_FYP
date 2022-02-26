@@ -102,6 +102,22 @@ FVector AFluidSimulation_FYPGameModeBase::Interpolate(const FVector& origin, con
 	return sum;
 }
 
+double AFluidSimulation_FYPGameModeBase::Interpolate(const FVector& origin, const TArray<double>& values) const
+{
+	double sum = 0.0;
+	FSphStdKernel kernel(m_kernelRadius);
+	const double mass = m_particles[0]->kMass;
+
+	m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t i, const FVector& neighbourPos) {
+		double dist = FVector::Distance(origin, neighbourPos);
+		//more weight the closer to the origin.
+		double weight = mass * kernel(dist);
+		sum += weight;
+		});
+
+	return sum;
+}
+
 //helper function to remove the infinite recursion from the function above.
 //this function needs to be called first to initialise the densities
 void AFluidSimulation_FYPGameModeBase::UpdateDensities()

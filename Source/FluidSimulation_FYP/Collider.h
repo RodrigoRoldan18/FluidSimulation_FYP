@@ -15,7 +15,6 @@ class FLUIDSIMULATION_FYP_API ACollider : public AActor
 	UPROPERTY(EditDefaultsOnly, Category = "Components")
 	class UStaticMeshComponent* m_mesh;
 
-	class USurface* m_surface;
 	double m_frictionCoefficient{ 0.0 };
 	FVector m_linearVelocity = FVector(0.0f, 0.0f, 0.0f);
 	FVector m_angularVelocity = FVector(0.0f, 0.0f, 0.0f);
