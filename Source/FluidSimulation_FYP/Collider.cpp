@@ -17,7 +17,7 @@ void ACollider::ResolveCollision(const FVector& currentPosition, const FVector& 
 {
 	ColliderQueryResult colliderPoint;
 
-	GetClosestPoint(m_surface, *newPosition, &colliderPoint);
+	GetClosestPoint(*newPosition, &colliderPoint);
 
 	//Check if the new position is penetrating the surface
 	if (IsPenetrating(colliderPoint, *newPosition, radius))
@@ -62,12 +62,12 @@ FVector ACollider::VelocityAt(const FVector& point) const
 	return m_linearVelocity + FVector::CrossProduct(m_angularVelocity, r);
 }
 
-void ACollider::GetClosestPoint(USurface* surface, const FVector& queryPoint, ColliderQueryResult* result) const
+void ACollider::GetClosestPoint(const FVector& queryPoint, ColliderQueryResult* result) const
 {
-	result->distance = surface->ClosestDistance(queryPoint); //Get closest distance from querypoint to the mesh
-	result->point = surface->ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
-	result->normal = surface->ClosestNormal(queryPoint); //get the normal
-	result->velocity = VelocityAt(queryPoint); //
+	//result->distance = surface->ClosestDistance(queryPoint); //Get closest distance from querypoint to the mesh
+	//result->point = surface->ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
+	result->normal = m_mesh->GetUpVector(); //get the normal
+	result->velocity = VelocityAt(queryPoint); 
 
 	//I AM OVERCOMPLICATING MYSELF. TAKE A STEP BACK AND RECONSIDER THE APPROACH.
 	//might not need to create a surface class. The mesh should be enough to help.

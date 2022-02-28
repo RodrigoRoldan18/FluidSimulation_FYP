@@ -34,7 +34,7 @@ protected:
 		FVector velocity;
 	};
 
-	void GetClosestPoint(class USurface* surface, const FVector& queryPoint, ColliderQueryResult* result) const;
+	void GetClosestPoint(const FVector& queryPoint, ColliderQueryResult* result) const;
 	bool IsPenetrating(const ColliderQueryResult& colliderPoint, const FVector& position, double radius);
 };
 
