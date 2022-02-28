@@ -88,6 +88,16 @@ void AParticleSystemSolver::initPhysicsSolver(TArray<AFluidParticle*>* ptrPartic
 {
 	m_ptrParticles = ptrParticles;
 	m_gameMode = gameMode;
+
+	TArray<AActor*> foundColliders;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACollider::StaticClass(), foundColliders);
+	m_colliders.Reserve(foundColliders.Num());
+	for (AActor* a : foundColliders)
+	{
+		ACollider* castCollider = Cast<ACollider>(a);
+		m_colliders.Push(castCollider);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("we have %i colliders in the world"), m_colliders.Num());
 }
 
 void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
@@ -103,7 +113,7 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 	timeIntegration(timeIntervalInSeconds);
 	
 	//Resolve collisions disabled until fully implemented
-	//resolveCollision();
+	resolveCollision();
 
 	endAdvanceTimeStep(timeIntervalInSeconds);
 }
@@ -303,13 +313,15 @@ void AParticleSystemSolver::resolveCollision()
 {
 	//whitebox function, we will get to external collisions later
 
-	if (m_collider != nullptr)
-	{
-		size_t n = m_ptrParticles->Num();
-		const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
-
-		ParallelFor(n, [&](size_t i) {
-			m_collider->ResolveCollision(m_newPositions[i], m_newVelocities[i], kParticleRadius, m_restitutionCoefficient, &m_newPositions[i], &m_newVelocities[i]);
-			});
-	}
+	size_t n = m_ptrParticles->Num();
+	ParallelFor(n, [&](size_t i) {
+		for (ACollider* c : m_colliders)
+		{
+			if (c != nullptr)
+			{
+				const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
+				c->ResolveCollision(m_newPositions[i], m_newVelocities[i], kParticleRadius, m_restitutionCoefficient, &m_newPositions[i], &m_newVelocities[i]);
+			}
+		}		
+	});	
 }

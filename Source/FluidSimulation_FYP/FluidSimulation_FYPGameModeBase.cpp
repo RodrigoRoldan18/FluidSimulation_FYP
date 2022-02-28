@@ -42,7 +42,7 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 			numColumn = 0;
 			indexToResetPosition = i - 1;
 		}
-		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)), kParticleRadius * numColumn, kParticleRadius * numLevel);
+		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)), kParticleRadius * numColumn, kParticleRadius * numLevel + 100.0f);
 
 		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(ParticleBP, newParticleLocation, FRotator().ZeroRotator);
 		newParticle->SetParticlePosition(newParticleLocation);
@@ -77,10 +77,10 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 			if (i != j)
 			{
 				m_neighbourLists[i].Add(j);
-				if (i == 723)
+				/*if (i == 723)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
-				}				
+				}	*/			
 			}
 		});
 	}

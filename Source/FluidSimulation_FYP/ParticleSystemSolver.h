@@ -19,7 +19,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	const FVector m_kWind{ FVector(10.0f, 0.0f, 0.0f) }; //test wind (vector field)
 	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
-	double m_restitutionCoefficient{ 0.0 };
+	double m_restitutionCoefficient{ 1.0 };
 	double m_dragCoefficient{ 1e-4 };
 
 	//exponent component of EOS(Tait's equation)
@@ -41,7 +41,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	TArray<FVector> m_newVelocities;
 
 	//rigid body obstacle in the simulation
-	class ACollider* m_collider;
+	TArray<class ACollider*> m_colliders;
 	//Where the particles spawn from (like a fountain) THIS IS FOR FUTURE IMPLEMENTATION
 	class AParticleEmitter* m_emitter;
 

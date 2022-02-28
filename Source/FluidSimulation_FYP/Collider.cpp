@@ -17,7 +17,7 @@ void ACollider::ResolveCollision(const FVector& currentPosition, const FVector& 
 {
 	ColliderQueryResult colliderPoint;
 
-	GetClosestPoint(*newPosition, &colliderPoint);
+	GetQueryResult(currentPosition, &colliderPoint);
 
 	//Check if the new position is penetrating the surface
 	if (IsPenetrating(colliderPoint, *newPosition, radius))
@@ -62,15 +62,27 @@ FVector ACollider::VelocityAt(const FVector& point) const
 	return m_linearVelocity + FVector::CrossProduct(m_angularVelocity, r);
 }
 
-void ACollider::GetClosestPoint(const FVector& queryPoint, ColliderQueryResult* result) const
+double ACollider::ClosestDistance(const FVector& point) const
 {
-	//result->distance = surface->ClosestDistance(queryPoint); //Get closest distance from querypoint to the mesh
-	//result->point = surface->ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
-	result->normal = m_mesh->GetUpVector(); //get the normal
-	result->velocity = VelocityAt(queryPoint); 
+	//get closest distance to the surface
+	return FVector::Distance(point, ClosestPoint(point));
+}
 
-	//I AM OVERCOMPLICATING MYSELF. TAKE A STEP BACK AND RECONSIDER THE APPROACH.
-	//might not need to create a surface class. The mesh should be enough to help.
+FVector ACollider::ClosestPoint(const FVector& point) const
+{
+	//get closest point in the surface
+	FVector r = point - m_mesh->GetComponentLocation();
+	FVector closestPointResult = r - FVector::DotProduct(m_mesh->GetUpVector(), r) * m_mesh->GetUpVector() + m_mesh->GetComponentLocation();
+	return closestPointResult;
+}
+
+void ACollider::GetQueryResult(const FVector& queryPoint, ColliderQueryResult* result)
+{
+	result->distance = ClosestDistance(queryPoint); //Get closest distance from querypoint to the mesh
+	result->point = ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
+	result->normal = m_mesh->GetUpVector(); //get the normal
+	//UE_LOG(LogTemp, Warning, TEXT("Apparently, the normal is: %f, %f, %f"), result->normal.X, result->normal.Y, result->normal.Z);
+	result->velocity = VelocityAt(queryPoint); 
 }
 
 bool ACollider::IsPenetrating(const ColliderQueryResult& colliderPoint, const FVector& position, double radius)
@@ -78,36 +90,4 @@ bool ACollider::IsPenetrating(const ColliderQueryResult& colliderPoint, const FV
 	//If the new candidate position of the particle is on the other side of the surface OR the new distance to the
 	//surface is less than the particle's radius, this particle is in colliding state.
 	return FVector::DotProduct((position - colliderPoint.point), colliderPoint.normal) < 0.0f || colliderPoint.distance < radius;
-}
-
-USurface::USurface()
-{
-	PrimaryComponentTick.bCanEverTick = false;
-	m_transform = FTransform();
-}
-
-double USurface::ClosestDistance(const FVector& otherPoint) const
-{
-	return FVector::Distance(otherPoint, ClosestPoint(otherPoint)); //otherPoint should become to transform.toLocal(otherPoint)
-
-	//toLocal function is supposed to: inverseOrientationMatrix * (otherPoint * _translation)
-}
-
-FVector USurface::ClosestNormal(const FVector& otherPoint) const
-{
-	FVector result; // = m_transform.ToWorldDirection(m_normal);
-	//toWorldDirection function is supposed to: orientationMatrix * m_normal
-	//if the normal is flipped just multiply it by -1
-	return result;
-}
-
-FVector USurface::ClosestPoint(const FVector& otherPoint) const
-{
-	//closest point local
-	FVector r = otherPoint - m_point; //otherPoint should become to transform.toLocal(otherPoint)
-	FVector closestPointLocalResult = r - FVector::DotProduct(m_normal, r) * m_normal + m_point;
-
-	FVector result; // = m_transform.toWorld(closestPointLocalResult);
-	//toWorld function is supposed to: orientationMatrix * pointInLocal + _translation
-	return result;
 }

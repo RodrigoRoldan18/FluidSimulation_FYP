@@ -25,6 +25,8 @@ public:
 
 	void ResolveCollision(const FVector& currentPosition, const FVector& currentVelocity, double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity);
 	FVector VelocityAt(const FVector& point) const;
+	double ClosestDistance(const FVector& point) const;
+	FVector ClosestPoint(const FVector& point) const;
 
 protected:
 	struct ColliderQueryResult {
@@ -34,29 +36,6 @@ protected:
 		FVector velocity;
 	};
 
-	void GetClosestPoint(const FVector& queryPoint, ColliderQueryResult* result) const;
+	void GetQueryResult(const FVector& queryPoint, ColliderQueryResult* result);
 	bool IsPenetrating(const ColliderQueryResult& colliderPoint, const FVector& position, double radius);
-};
-
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class FLUIDSIMULATION_FYP_API USurface : public UActorComponent
-{
-	GENERATED_BODY()
-
-public:
-	//local-to-world transform
-	FTransform m_transform;
-	FVector m_normal = FVector(0, 0, 1);
-	//point that lies on the plane
-	FVector m_point;
-
-	USurface(const FTransform& transform) : m_transform(transform) {}
-	USurface();
-
-	//closest distance from the given point to the point on the surface
-	double ClosestDistance(const FVector& otherPoint) const;
-	//normal to the closest point on the surface from the given point
-	FVector ClosestNormal(const FVector& otherPoint) const;
-	//closest point from the given point to the surface
-	FVector ClosestPoint(const FVector& otherPoint) const;
 };
