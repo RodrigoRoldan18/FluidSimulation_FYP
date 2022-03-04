@@ -216,12 +216,12 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 					kernel.Gradient(dist, dir);
 				Mutex.Lock();
 				(*m_ptrParticles)[i]->SetParticleForce(pressureForceResult);
-				Mutex.Unlock();
-				if (i == 723)
-				{
-					UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
-				}
+				Mutex.Unlock();				
 			}
+		}
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
 		}
 		});
 }
@@ -265,11 +265,11 @@ void AParticleSystemSolver::accumulateViscosityForce()
 				kernel.SecondDerivative(dist);
 			Mutex.Lock();
 			(*m_ptrParticles)[i]->SetParticleForce(viscosityForceResult);
-			Mutex.Unlock();
-			if (i == 723)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Particle 723 viscosity FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
-			}
+			Mutex.Unlock();			
+		}
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 viscosity FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
 		}
 		});
 }

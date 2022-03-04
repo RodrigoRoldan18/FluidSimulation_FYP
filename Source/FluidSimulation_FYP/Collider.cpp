@@ -72,7 +72,7 @@ double ACollider::ClosestDistance(const FVector& point) const
 
 FVector ACollider::ClosestPoint(const FVector& point) const
 {
-	//get closest point in the surface
+	//get closest point in the surface. This is causing some crashes. It might be because it's constantly refering to the mesh pointer.
 	FVector r = point - m_location;
 	FVector closestPointResult = r - FVector::DotProduct(m_mesh->GetUpVector(), r) * m_mesh->GetUpVector() + m_mesh->GetComponentLocation();
 	return closestPointResult;
