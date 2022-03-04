@@ -3,20 +3,22 @@
 
 #include "Kernels.h"
 
+#define kPId 3.14159265358979323846264338327950288
+
 FSphStdKernel::FSphStdKernel() : h(0), h2(0), h3(0), h5(0) {}
 FSphStdKernel::FSphStdKernel(double kernelRadius) : h(kernelRadius), h2(h* h), h3(h2* h), h5(h2* h3) {}
 FSphStdKernel::FSphStdKernel(const FSphStdKernel& other) : h(other.h), h2(other.h2), h3(other.h3), h5(other.h5) {}
 double FSphStdKernel::operator()(double distance) const
 {
 	//distance between particles (r)
-	if (distance * distance >= h * h)
+	if (distance * distance >= h2)
 	{
 		return 0.0;
 	}
 	else
 	{
 		double x = 1.0 - distance * distance / h2;
-		return 315.0 / (64.0 * 3.14 * h3) * x * x * x;
+		return 315.0 / (64.0 * kPId * h3) * x * x * x;
 	}
 }
 
@@ -29,7 +31,7 @@ double FSphStdKernel::FirstDerivative(double distance) const
 	else
 	{
 		double x = 1.0 - distance * distance / h2;
-		return -945.0 / (32.0 * 3.14 * h5) * distance * x * x;
+		return -945.0 / (32.0 * kPId * h5) * distance * x * x;
 	}
 }
 
@@ -42,7 +44,7 @@ double FSphStdKernel::SecondDerivative(double distance) const
 	else
 	{
 		double x = distance * distance / h2;
-		return 945.0 / (32.0 * 3.14 * h5) * (1 - x) * (3 * x - 1);
+		return 945.0 / (32.0 * kPId * h5) * (1 - x) * (5 * x - 1);
 	}
 }
 
@@ -65,7 +67,7 @@ double FSphSpikyKernel::operator()(double distance) const
 	else
 	{
 		double x = 1.0 - distance / h;
-		return 15.0 / (3.14 * h3) * x * x * x;
+		return 15.0 / (kPId * h3) * x * x * x;
 	}
 }
 
@@ -78,7 +80,7 @@ double FSphSpikyKernel::FirstDerivative(double distance) const
 	else
 	{
 		double x = 1.0 - distance / h;
-		return -45.0 / (3.14 * h4) * x * x;
+		return -45.0 / (kPId * h4) * x * x;
 	}
 }
 
@@ -91,7 +93,7 @@ double FSphSpikyKernel::SecondDerivative(double distance) const
 	else
 	{
 		double x = 1.0 - distance / h;
-		return 90.0 / (3.14 * h5) * x;
+		return 90.0 / (kPId * h5) * x;
 	}
 }
 

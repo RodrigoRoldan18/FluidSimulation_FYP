@@ -27,18 +27,18 @@ private:
 	TArray<TArray<size_t>> m_neighbourLists;
 
 	//water density in kg/m^3
-	double m_targetDensity = 1000.0;
+	double m_targetDensity{ 0.001 }; //this should be 1000.0 but the pressure computation keeps returning negative values TEMPORARY HACK FIX
 	//target spacing in meters
-	double m_targetSpacing{ 10.0 }; //this should be 0.1
+	double m_targetSpacing{ 1.0 }; //this should be 0.02 based on the water drop test but we are keeping it as 1 because of the particle radius
 	//kernel radius in meters
 	double m_kernelRadius;
-	double m_kernelRadiusOverTargetSpacing{ 180.0 }; //this should be 1.8
+	double m_kernelRadiusOverTargetSpacing{ 1.8 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	int32 m_numOfParticles{ 5000 };
+	int32 m_numOfParticles{ 1000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	FVector2D m_simulationDimensions { FVector2D(100.0f) };
+	FVector2D m_simulationDimensions { FVector2D(10.0f) };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	TSubclassOf<class AFluidParticle> ParticleBP;
@@ -59,7 +59,7 @@ public:
 	//Returns interpolated scalar data. Could be used for density and pressure.
 	double Interpolate(const FVector& origin, const TArray<double>& values) const;
 	void UpdateDensities();
-	double sumOfKernelNearby(const FVector& origin) const;
+	double sumOfKernelNearby(const FVector& origin, bool testPrint) const;
 	FVector GradientAt(size_t i, const TArray<double>& values) const;
 	double LaplacianAt(size_t i, const TArray<double>& values) const;
 

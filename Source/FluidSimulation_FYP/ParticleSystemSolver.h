@@ -19,8 +19,8 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	const FVector m_kWind{ FVector(10.0f, 0.0f, 0.0f) }; //test wind (vector field)
 	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
-	double m_restitutionCoefficient{ 1.0 };
-	double m_dragCoefficient{ 1e-4 };
+	double m_restitutionCoefficient{ 0.0 };
+	double m_dragCoefficient{ 0.01 }; //1e-4 TEMPORARY HACK FIX
 
 	//exponent component of EOS(Tait's equation)
 	double m_eosExponent{ 7.0 };
@@ -28,7 +28,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	double m_negaitvePressureScale{ 0.0 };
 	double m_viscosityCoefficient{ 0.01 }; //original value is 0.01 but testing calculations suggest to use 0.1
 	//this is a minimum "safety-net" for SPH which is quite sensitive to the parameters.
-	double m_pseudoViscossityCoefficient{ 10.0 };
+	double m_pseudoViscossityCoefficient{ 0.0 }; //this used to be 10.0
 	//Speed of sound in the medium to determine the stiffness of the system.
 	//This should be the actual speed of sound in the fluid but a lower value is better to trace-off performance and compressibility
 	double m_speedOfSound{ 100.0 };
@@ -43,7 +43,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	//rigid body obstacle in the simulation
 	TArray<class ACollider*> m_colliders;
 	//Where the particles spawn from (like a fountain) THIS IS FOR FUTURE IMPLEMENTATION
-	class AParticleEmitter* m_emitter;
+	//class AParticleEmitter* m_emitter;
 
 public:	
 	// Sets default values for this component's properties

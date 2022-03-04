@@ -69,10 +69,18 @@ void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
 		FVector& newVelocity = m_newVelocities[i];
 		newVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + timeIntervalInSeconds *
 			(*m_ptrParticles)[i]->GetParticleForce() / (*m_ptrParticles)[i]->kMass;
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 NEW VELOCITY: %s"), *newVelocity.ToString());
+		}
 
 		//Integrate position.
 		FVector& newPosition = m_newPositions[i];
 		newPosition = (*m_ptrParticles)[i]->GetParticlePosition() + timeIntervalInSeconds * newVelocity;
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 NEW POSITION: %s"), *(*m_ptrParticles)[i]->GetParticlePosition().ToString());
+		}
 		});
 }
 
@@ -169,6 +177,10 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticleForce((*m_ptrParticles)[i]->GetParticleForce() + force);
 		Mutex.Unlock();
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 external FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+		}
 		});
 }
 
@@ -205,6 +217,10 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 				Mutex.Lock();
 				(*m_ptrParticles)[i]->SetParticleForce(pressureForceResult);
 				Mutex.Unlock();
+				if (i == 723)
+				{
+					UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+				}
 			}
 		}
 		});
@@ -215,7 +231,7 @@ void AParticleSystemSolver::computePressure()
 	//STAGE 2 - COMPUTE THE PRESSURE BASED ON THE DENSITY
 	size_t n = m_ptrParticles->Num();
 	const double targetDensity = m_gameMode->GetTargetDensity();
-	const double eosScale = targetDensity * (m_speedOfSound * m_speedOfSound) / m_eosExponent;
+	const double eosScale = targetDensity * (m_speedOfSound * m_speedOfSound);
 	
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
@@ -223,6 +239,10 @@ void AParticleSystemSolver::computePressure()
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticlePressure(pressure);
 		Mutex.Unlock();
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 PRESSURE: %f"), (*m_ptrParticles)[i]->GetParticlePressure());
+		}
 		});
 }
 
@@ -246,6 +266,10 @@ void AParticleSystemSolver::accumulateViscosityForce()
 			Mutex.Lock();
 			(*m_ptrParticles)[i]->SetParticleForce(viscosityForceResult);
 			Mutex.Unlock();
+			if (i == 723)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 viscosity FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+			}
 		}
 		});
 }
@@ -298,7 +322,7 @@ void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
 
 double AParticleSystemSolver::computePressureFromEOS(double density, double targetDensity, double eosScale, double eosExponent, double negativePressureScale)
 {
-	double p = eosScale / eosExponent * (FMath::Pow((density / targetDensity), eosExponent) - 1.0);
+	double p = eosScale / eosExponent * (FMath::Pow((density / targetDensity), eosExponent) - 1.0); //THIS IS GIVING A NEGATIVE SOLUTION. Maybe the density is too low. Lowered the target density to compensate.
 
 	//Negative pressure scaling
 	if (p < 0)

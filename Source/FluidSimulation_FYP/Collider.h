@@ -18,6 +18,7 @@ class FLUIDSIMULATION_FYP_API ACollider : public AActor
 	double m_frictionCoefficient{ 0.0 };
 	FVector m_linearVelocity = FVector(0.0f, 0.0f, 0.0f);
 	FVector m_angularVelocity = FVector(0.0f, 0.0f, 0.0f);
+	FVector m_location;
 	
 public:	
 	// Sets default values for this actor's properties

@@ -12,6 +12,7 @@ AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 	PrimaryActorTick.bCanEverTick = true;
 
 	m_kernelRadius = m_kernelRadiusOverTargetSpacing * m_targetSpacing;
+	UE_LOG(LogTemp, Warning, TEXT("Kernel radius: %f"), m_kernelRadius);
 
 	m_neighbourSearcher = CreateDefaultSubobject<UNeighbourSearch>("NeighbourSearcher");
 	m_physicsSolver = CreateDefaultSubobject<AParticleSystemSolver>("PhysicsSolver");
@@ -58,7 +59,7 @@ void AFluidSimulation_FYPGameModeBase::resize(size_t newNumberOfParticles)
 
 void AFluidSimulation_FYPGameModeBase::BuildNeighbourSearcher()
 {
-	m_neighbourSearcher->initialiseNeighbourSearcher(kDefaultHashGridResolution, 2.0f * kParticleRadius); //kParticleRadius should be m_kernelRadius instead
+	m_neighbourSearcher->initialiseNeighbourSearcher(kDefaultHashGridResolution, m_kernelRadius); //I used to have 2 * kParticleRadius
 	m_neighbourSearcher->build(m_particles);
 }
 
@@ -73,16 +74,20 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 		FVector origin = particles[i]->GetParticlePosition();
 		m_neighbourLists[i].Empty();
 
-		m_neighbourSearcher->forEachNearbyPoint(origin, kParticleRadius, [&](size_t j, const FVector&) { //kParticleRadius should be m_kernelRadius instead
+		m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t j, const FVector&) { //kParticleRadius should be m_kernelRadius instead
 			if (i != j)
 			{
 				m_neighbourLists[i].Add(j);
-				/*if (i == 723)
+				if (i == 723)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
-				}	*/			
+				}		
 			}
 		});
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle %i has %i particle neighbours"), i, m_neighbourLists[i].Num());
+		}
 	}
 }
 
@@ -125,20 +130,30 @@ void AFluidSimulation_FYPGameModeBase::UpdateDensities()
 	size_t n = GetNumberOfParticles();
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
-		double sum = sumOfKernelNearby(m_particles[i]->GetParticlePosition());
+		double sum = sumOfKernelNearby(m_particles[i]->GetParticlePosition(), i == 723 ? true : false);
 		Mutex.Lock();
 		m_particles[i]->SetParticleDensity(m_particles[i]->kMass * sum);
 		Mutex.Unlock();
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 DENSITY: %f. The sumOfKernelNearby is: %f"), m_particles[i]->GetParticleDensity(), sum);
+		}
 		});
 }
 
-double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin) const
+double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin, bool testPrint) const
 {
 	double sum = 0.0;
 	FSphStdKernel kernel(m_kernelRadius);
-	m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t i, const FVector& neighbourPos) {
-		double dist = FVector::Distance(origin, neighbourPos);
+	m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t, const FVector& neighbourPos) {
+		double dist = FVector::Distance(origin, neighbourPos);		
 		sum += kernel(dist);
+		if (testPrint)
+		{
+			//UE_LOG(LogTemp, Warning, TEXT("Particle 723 distance: %f"), dist);
+			//UE_LOG(LogTemp, Warning, TEXT("Particle 723 KERNEL distance: %f"), kernel(dist));
+			//SumOfKernel calculations look fine
+		}
 		});
 	return sum;
 }

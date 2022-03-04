@@ -16,7 +16,7 @@ public:
 
 private:
 	double m_gridSpacing = 2.0; //radius * 2
-	FIntVector m_resolution = FIntVector(64, 64, 64); //default says 1 but calculations suggest 64
+	FIntVector m_resolution = FIntVector(64, 64, 64); //the higher the resolution the better
 	TArray<TArray<size_t>> m_buckets;
 	TArray<FVector> m_particlePositions;
 

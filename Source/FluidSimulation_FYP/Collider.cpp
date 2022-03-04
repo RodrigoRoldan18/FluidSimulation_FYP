@@ -11,6 +11,8 @@ ACollider::ACollider()
 
 	m_mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = m_mesh;
+
+	m_location = m_mesh->GetComponentLocation();
 }
 
 void ACollider::ResolveCollision(const FVector& currentPosition, const FVector& currentVelocity, double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity)
@@ -71,7 +73,7 @@ double ACollider::ClosestDistance(const FVector& point) const
 FVector ACollider::ClosestPoint(const FVector& point) const
 {
 	//get closest point in the surface
-	FVector r = point - m_mesh->GetComponentLocation();
+	FVector r = point - m_location;
 	FVector closestPointResult = r - FVector::DotProduct(m_mesh->GetUpVector(), r) * m_mesh->GetUpVector() + m_mesh->GetComponentLocation();
 	return closestPointResult;
 }
