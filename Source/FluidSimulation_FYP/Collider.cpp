@@ -12,7 +12,7 @@ ACollider::ACollider()
 	m_mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = m_mesh;
 
-	m_location = m_mesh->GetComponentLocation();
+	//m_location = m_mesh->GetComponentTransform().GetLocation();
 }
 
 void ACollider::ResolveCollision(const FVector& currentPosition, const FVector& currentVelocity, double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity)
@@ -74,7 +74,11 @@ FVector ACollider::ClosestPoint(const FVector& point) const
 {
 	//get closest point in the surface. This is causing some crashes. It might be because it's constantly refering to the mesh pointer.
 	FVector r = point - m_location;
+	FCriticalSection Mutex;
+	Mutex.Lock();
 	FVector closestPointResult = r - FVector::DotProduct(m_mesh->GetUpVector(), r) * m_mesh->GetUpVector() + m_mesh->GetComponentLocation();
+	Mutex.Unlock();
+	//UE_LOG(LogTemp, Warning, TEXT("Apparently, m_location is: %s"), *m_location.ToString());
 	return closestPointResult;
 }
 
@@ -83,7 +87,7 @@ void ACollider::GetQueryResult(const FVector& queryPoint, ColliderQueryResult* r
 	result->distance = ClosestDistance(queryPoint); //Get closest distance from querypoint to the mesh
 	result->point = ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
 	result->normal = m_mesh->GetUpVector(); //get the normal
-	//UE_LOG(LogTemp, Warning, TEXT("Apparently, the normal is: %f, %f, %f"), result->normal.X, result->normal.Y, result->normal.Z);
+	//UE_LOG(LogTemp, Warning, TEXT("Apparently, the normal is: %s"), result.ToString());
 	result->velocity = VelocityAt(queryPoint); 
 }
 
@@ -92,4 +96,11 @@ bool ACollider::IsPenetrating(const ColliderQueryResult& colliderPoint, const FV
 	//If the new candidate position of the particle is on the other side of the surface OR the new distance to the
 	//surface is less than the particle's radius, this particle is in colliding state.
 	return FVector::DotProduct((position - colliderPoint.point), colliderPoint.normal) < 0.0f || colliderPoint.distance < radius;
+}
+
+void ACollider::BeginPlay()
+{
+	Super::BeginPlay();
+
+	m_location = m_mesh->GetComponentLocation();
 }

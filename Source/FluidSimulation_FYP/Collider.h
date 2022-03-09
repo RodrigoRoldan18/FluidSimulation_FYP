@@ -39,4 +39,7 @@ protected:
 
 	void GetQueryResult(const FVector& queryPoint, ColliderQueryResult* result);
 	bool IsPenetrating(const ColliderQueryResult& colliderPoint, const FVector& position, double radius);
+
+	//Called when the game starts or when spawned
+	virtual void BeginPlay() override;
 };
