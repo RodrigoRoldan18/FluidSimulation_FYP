@@ -38,6 +38,9 @@ private:
 	int32 m_numOfParticles{ 1000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
+	bool m_usePCISPHsolver{ true };
+
+	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	FVector2D m_simulationDimensions { FVector2D(10.0f) };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")

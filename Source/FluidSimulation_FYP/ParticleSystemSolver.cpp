@@ -226,6 +226,82 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 		});
 }
 
+void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSeconds)
+{
+	const size_t n = m_ptrParticles->Num();
+	const double targetDensity = m_gameMode->GetTargetDensity();
+	const double mass = (*m_ptrParticles)[0]->kMass;
+	TArray<double> ds;
+	FSphStdKernel kernel(m_gameMode->GetKernelRadius());
+
+	//Initialise buffers
+	m_tempPositions.Reserve(n);
+	m_tempPressureForces.Reserve(n);
+	m_tempPressureForces.Reserve(n);
+	m_densityErrors.Reserve(n);
+	ds.Reserve(n);
+	m_tempPositions.SetNumZeroed(n);
+	m_tempVelocities.SetNumZeroed(n);
+	m_tempPressureForces.SetNumZeroed(n);
+	m_densityErrors.SetNumZeroed(n);
+	ds.SetNumZeroed(n);
+
+	FCriticalSection Mutex;
+	ParallelFor(n, [&](size_t i) {
+		Mutex.Lock();
+		(*m_ptrParticles)[i]->SetParticlePressure(0.0);
+		Mutex.Unlock();
+		ds[i] = (*m_ptrParticles)[i]->GetParticleDensity();
+		});
+
+	for (unsigned int k = 0; k < m_maxNumberOfIterations; ++k)
+	{
+		//Predict velocity and position (perform time integration from the current state to the temp state)
+		ParallelFor(n, [&](size_t i) {
+			m_tempVelocities[i] = (*m_ptrParticles)[i]->GetParticleVelocity() + timeStepInSeconds / mass *
+				((*m_ptrParticles)[i]->GetParticleForce() + m_tempPressureForces[i]);
+			m_tempPositions[i] = (*m_ptrParticles)[i]->GetParticlePosition() + timeStepInSeconds * m_tempVelocities[i];
+			});
+
+		//Resolve collisions (will have to write a different version for PCISPH so the right values are passed)
+		resolveCollision(); 
+
+		//Compute pressure from density error
+		ParallelFor(n, [&](size_t i) {
+			double weightSum = 0.0;
+			const auto& neighbours = (*m_gameMode->GetNeighbourLists())[i];
+			for (size_t j : neighbours)
+			{
+				double dist = FVector::Distance(m_tempPositions[j], m_tempPositions[i]);
+				weightSum += kernel(dist);
+			}
+			weightSum += kernel(0);
+
+			double density = mass * weightSum;
+			double densityError = (density - targetDensity);
+			double pressure = timeStepInSeconds * densityError; //the timeStepInSeconds is supposed to be the delta
+
+			if (pressure < 0.0)
+			{
+				pressure *= m_negaitvePressureScale;
+				densityError *= m_negaitvePressureScale;
+			}
+
+			Mutex.Lock();
+			(*m_ptrParticles)[i]->SetParticlePressure((*m_ptrParticles)[i]->GetParticlePressure() + pressure);
+			Mutex.Unlock();
+			ds[i] = density;
+			m_densityErrors[i] = densityError;
+			});
+
+		//Compute pressure gradient force
+
+		//Compute max density error
+
+	}
+	//Accumulate pressure force
+}
+
 void AParticleSystemSolver::computePressure()
 {
 	//STAGE 2 - COMPUTE THE PRESSURE BASED ON THE DENSITY

@@ -33,6 +33,15 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	//This should be the actual speed of sound in the fluid but a lower value is better to trace-off performance and compressibility
 	double m_speedOfSound{ 100.0 };
 
+	//------------------------These values are only used for the PCISPH method-----------------------------
+	double m_maxDensityErrorRatio{ 0.01 };
+	unsigned int m_maxNumberOfIterations{ 5 };
+	TArray<FVector> m_tempPositions;
+	TArray<FVector> m_tempVelocities;
+	TArray<FVector> m_tempPressureForces;
+	TArray<double> m_densityErrors;
+	//-----------------------------------------------------------------------------------------------------
+
 	TArray<class AFluidParticle*>* m_ptrParticles;
 	class AFluidSimulation_FYPGameModeBase* m_gameMode;
 
@@ -63,6 +72,7 @@ protected:
 	void accumulateExternalForces(double timeStepInSeconds);
 	void accumulateNonPressureForces(double timeStepInSeconds);
 	void accumulatePressureForce(double timeStepInSeconds);
+	void accumulatePressureForcePCISPH(double timeStepInSeconds);
 	void computePressure();
 	void accumulateViscosityForce();
 	void computePseudoViscosity(double timeStepInSeconds);
