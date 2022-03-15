@@ -231,6 +231,8 @@ void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSecon
 	const size_t n = m_ptrParticles->Num();
 	const double targetDensity = m_gameMode->GetTargetDensity();
 	const double mass = (*m_ptrParticles)[0]->kMass;
+	const double delta = computeDelta(timeStepInSeconds);
+	//Predicted density ds
 	TArray<double> ds;
 	FSphStdKernel kernel(m_gameMode->GetKernelRadius());
 
@@ -279,7 +281,7 @@ void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSecon
 
 			double density = mass * weightSum;
 			double densityError = (density - targetDensity);
-			double pressure = timeStepInSeconds * densityError; //the timeStepInSeconds is supposed to be the delta
+			double pressure = delta * densityError;
 
 			if (pressure < 0.0)
 			{
@@ -295,11 +297,28 @@ void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSecon
 			});
 
 		//Compute pressure gradient force
+		m_tempPressureForces.SetNumZeroed(n);
+		//accumulatePressureForce(ds, m_tempPressureForces); // use the same calculations in the SPH function.
 
 		//Compute max density error
+		double maxDensityError = 0.0;
+		for (size_t i = 0; i < n; ++i)
+		{
+			maxDensityError = maxDensityError > m_densityErrors[i] ? FMath::Abs(maxDensityError) : FMath::Abs(m_densityErrors[i]);
+		}
 
+		double densityErrorRatio = maxDensityError / targetDensity;
+		if (FMath::Abs(densityErrorRatio) < m_maxDensityErrorRatio)
+		{
+			break;
+		}
 	}
 	//Accumulate pressure force
+	ParallelFor(n, [&](size_t i) {
+		Mutex.Lock();
+		(*m_ptrParticles)[i]->SetParticleForce((*m_ptrParticles)[i]->GetParticleForce() + m_tempPressureForces[i]);
+		Mutex.Unlock();
+		});
 }
 
 void AParticleSystemSolver::computePressure()
@@ -424,4 +443,44 @@ void AParticleSystemSolver::resolveCollision()
 			}
 		}		
 	});	
+}
+
+double AParticleSystemSolver::computeDelta(double timeStepInSeconds)
+{
+	const double kernelRadius = m_gameMode->GetKernelRadius();
+	TArray<FVector> points;
+	//BccLatticePointsGenerator pointsGenerator //find a way to generate points in the body-centered cubic pattern. 
+	//(This pattern has one point in the center of the unit cube and eight corner points.)
+	FVector origin;
+	//might need to change this to reference the bound box
+	FSphSpikyKernel kernel(kernelRadius);
+	double denom = 0;
+	FVector denom1;
+	double denom2 = 0;
+
+	for (size_t i = 0; i < points.Num(); ++i)
+	{
+		const FVector& point = points[i];
+		double distanceSquared = point.SizeSquared();
+
+		if (distanceSquared < kernelRadius * kernelRadius)
+		{
+			double distance = FMath::Sqrt(distanceSquared);
+			FVector direction = (distance > 0.0) ? point / distance : FVector();
+
+			//grad(Wij)
+			FVector gradWij = kernel.Gradient(distance, direction);
+			denom1 += gradWij;
+			denom2 += FVector::DotProduct(gradWij, gradWij);
+		}
+	}
+
+	denom += FVector::DotProduct(-denom1, denom1) - denom2;
+
+	return (FMath::Abs(denom) > 0.0) ? -1 / (computeBeta(timeStepInSeconds) * denom) : 0;
+}
+
+double AParticleSystemSolver::computeBeta(double timeStepInSeconds)
+{
+	return 2.0 * FMath::Square((*m_ptrParticles)[0]->kMass * timeStepInSeconds / m_gameMode->GetTargetDensity());
 }

@@ -77,7 +77,10 @@ protected:
 	void accumulateViscosityForce();
 	void computePseudoViscosity(double timeStepInSeconds);
 	double computePressureFromEOS(double density, double targetDensity, double eosScale, double eosExponent, double negativePressureScale);
+	double computeDelta(double timeStepInSeconds);
+	double computeBeta(double timeStepInSeconds);
 
 	//only external forces will be taken into account here.
 	void resolveCollision();		
+	//void resolveCollisionPCISPH()
 };
