@@ -223,6 +223,37 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
 		}
+	});
+}
+
+void AParticleSystemSolver::computePressureGradientForcePCISPH(double timeStepInSeconds, const TArray<double>& densities)
+{
+	//do the accumulatepressureforce function here
+	size_t n = m_ptrParticles->Num();
+
+	const double massSquared = (*m_ptrParticles)[0]->kMass * (*m_ptrParticles)[0]->kMass;
+	const FSphSpikyKernel kernel(m_gameMode->GetKernelRadius());
+
+	FCriticalSection Mutex;
+	ParallelFor(n, [&](size_t i) {
+		const auto& neighbours = (*m_gameMode->GetNeighbourLists())[i];
+		for (size_t j : neighbours)
+		{
+			double dist = FVector::Distance((*m_ptrParticles)[i]->GetParticlePosition(), (*m_ptrParticles)[j]->GetParticlePosition());
+			if (dist > 0.0)
+			{
+				FVector dir = ((*m_ptrParticles)[j]->GetParticlePosition() - (*m_ptrParticles)[i]->GetParticlePosition()) / dist;
+				FVector pressureForceResult = m_tempPressureForces[i] - massSquared *
+					((*m_ptrParticles)[i]->GetParticlePressure() / (densities[i] * densities[i]) +
+						(*m_ptrParticles)[j]->GetParticlePressure() / (densities[j] * densities[j])) *
+					kernel.Gradient(dist, dir);
+				m_tempPressureForces[i] = pressureForceResult;
+			}
+		}
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+		}
 		});
 }
 
@@ -238,7 +269,7 @@ void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSecon
 
 	//Initialise buffers
 	m_tempPositions.Reserve(n);
-	m_tempPressureForces.Reserve(n);
+	m_tempVelocities.Reserve(n);
 	m_tempPressureForces.Reserve(n);
 	m_densityErrors.Reserve(n);
 	ds.Reserve(n);
@@ -256,6 +287,10 @@ void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSecon
 		ds[i] = (*m_ptrParticles)[i]->GetParticleDensity();
 		});
 
+	unsigned int maxNumberIter = 0;
+	double maxDensityError = 0.0;
+	double densityErrorRatio = 0.0;
+
 	for (unsigned int k = 0; k < m_maxNumberOfIterations; ++k)
 	{
 		//Predict velocity and position (perform time integration from the current state to the temp state)
@@ -265,8 +300,8 @@ void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSecon
 			m_tempPositions[i] = (*m_ptrParticles)[i]->GetParticlePosition() + timeStepInSeconds * m_tempVelocities[i];
 			});
 
-		//Resolve collisions (will have to write a different version for PCISPH so the right values are passed)
-		resolveCollision(); 
+		//Resolve collisions
+		resolveCollisionPCISPH(); 
 
 		//Compute pressure from density error
 		ParallelFor(n, [&](size_t i) {
@@ -298,21 +333,31 @@ void AParticleSystemSolver::accumulatePressureForcePCISPH(double timeStepInSecon
 
 		//Compute pressure gradient force
 		m_tempPressureForces.SetNumZeroed(n);
-		//accumulatePressureForce(ds, m_tempPressureForces); // use the same calculations in the SPH function.
+		computePressureGradientForcePCISPH(timeStepInSeconds, ds);
 
 		//Compute max density error
-		double maxDensityError = 0.0;
 		for (size_t i = 0; i < n; ++i)
 		{
-			maxDensityError = maxDensityError > m_densityErrors[i] ? FMath::Abs(maxDensityError) : FMath::Abs(m_densityErrors[i]);
+			maxDensityError = FMath::Abs(maxDensityError) > FMath::Abs(m_densityErrors[i]) ? FMath::Abs(maxDensityError) : FMath::Abs(m_densityErrors[i]);
 		}
 
-		double densityErrorRatio = maxDensityError / targetDensity;
+		densityErrorRatio = maxDensityError / targetDensity;
+		maxNumberIter = k + 1;
+
 		if (FMath::Abs(densityErrorRatio) < m_maxDensityErrorRatio)
 		{
 			break;
 		}
 	}
+
+	UE_LOG(LogTemp, Warning, TEXT("Number of PCI iterations: %i"), maxNumberIter);
+	UE_LOG(LogTemp, Warning, TEXT("Max density error after PCI iteration: %f"), maxDensityError);
+	if (FMath::Abs(densityErrorRatio) > m_maxDensityErrorRatio)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Max density error ration is greater than the threshold!"));
+		UE_LOG(LogTemp, Warning, TEXT("Ratio: %f, Threshold: %f"), densityErrorRatio, m_maxDensityErrorRatio);
+	}
+
 	//Accumulate pressure force
 	ParallelFor(n, [&](size_t i) {
 		Mutex.Lock();
@@ -443,6 +488,23 @@ void AParticleSystemSolver::resolveCollision()
 			}
 		}		
 	});	
+}
+
+void AParticleSystemSolver::resolveCollisionPCISPH()
+{
+	//PCISPH version
+
+	size_t n = m_ptrParticles->Num();
+	ParallelFor(n, [&](size_t i) {
+		for (ACollider* c : m_colliders)
+		{
+			if (c != nullptr)
+			{
+				const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
+				c->ResolveCollision(m_tempPositions[i], m_tempVelocities[i], kParticleRadius, m_restitutionCoefficient, &m_tempPositions[i], &m_tempVelocities[i]);
+			}
+		}
+	});
 }
 
 double AParticleSystemSolver::computeDelta(double timeStepInSeconds)

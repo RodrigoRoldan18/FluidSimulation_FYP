@@ -72,6 +72,7 @@ protected:
 	void accumulateExternalForces(double timeStepInSeconds);
 	void accumulateNonPressureForces(double timeStepInSeconds);
 	void accumulatePressureForce(double timeStepInSeconds);
+	void computePressureGradientForcePCISPH(double timeStepInSeconds, const TArray<double>& densities);
 	void accumulatePressureForcePCISPH(double timeStepInSeconds);
 	void computePressure();
 	void accumulateViscosityForce();
@@ -82,5 +83,5 @@ protected:
 
 	//only external forces will be taken into account here.
 	void resolveCollision();		
-	//void resolveCollisionPCISPH()
+	void resolveCollisionPCISPH();
 };
