@@ -70,6 +70,7 @@ public:
 	TArray<class AFluidParticle*>* GetParticleArrayPtr() { return &m_particles; }
 	double GetTargetDensity() const { return m_targetDensity; }
 	double GetKernelRadius() const { return m_kernelRadius; }
+	double GetTargetSpacing() const { return m_targetSpacing; }
 	TArray<TArray<size_t>>* GetNeighbourLists() { return &m_neighbourLists; }
 
 	//Called every frame

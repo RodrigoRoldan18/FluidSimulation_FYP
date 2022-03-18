@@ -5,6 +5,7 @@
 #include "FluidSimulation_FYPGameModeBase.h"
 #include "FluidParticle.h"
 #include "Kernels.h"
+#include "BCCLatticePointsGenerator.h"
 #include "Collider.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -511,10 +512,27 @@ double AParticleSystemSolver::computeDelta(double timeStepInSeconds)
 {
 	const double kernelRadius = m_gameMode->GetKernelRadius();
 	TArray<FVector> points;
-	//BccLatticePointsGenerator pointsGenerator //find a way to generate points in the body-centered cubic pattern. 
-	//(This pattern has one point in the center of the unit cube and eight corner points.)
 	FVector origin;
-	//might need to change this to reference the bound box
+	////might need to change this to reference the bound box
+	//BoundingBox3D boundingbox(origin, origin);
+	////inside this constructor for boundingbox:
+	//lowercorner.xyz = std::min(point1.xyz, point2.xyz);
+	//uppercorner.xyz = std::max(point1.xyz, point2.xyz);
+
+	//boundingbox.expand(1.5 * kernelRadius);
+	////inside this "expand" function:
+	//lowercorner -= delta;
+	//uppercorner += delta;
+
+	FVector lowercorner, uppercorner;
+	lowercorner -= FVector(1.5 * kernelRadius);
+	uppercorner += FVector(1.5 * kernelRadius);
+
+	BCCLatticePointsGenerator pointsGenerator; //find a way to generate points in the body-centered cubic pattern. 
+	//(This pattern has one point in the center of the unit cube and eight corner points.)
+
+	pointsGenerator.generate(lowercorner, uppercorner, m_gameMode->GetTargetSpacing(), &points);
+
 	FSphSpikyKernel kernel(kernelRadius);
 	double denom = 0;
 	FVector denom1;
