@@ -5,6 +5,7 @@
 #include "FluidParticle.h"
 #include "NeighbourSearch.h"
 #include "ParticleSystemSolver.h"
+#include "PCISPH_Solver.h"
 #include "Kernels.h"
 
 AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
@@ -15,7 +16,14 @@ AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 	UE_LOG(LogTemp, Warning, TEXT("Kernel radius: %f"), m_kernelRadius);
 
 	m_neighbourSearcher = CreateDefaultSubobject<UNeighbourSearch>("NeighbourSearcher");
-	m_physicsSolver = CreateDefaultSubobject<AParticleSystemSolver>("PhysicsSolver");
+	if (m_usePCISPHsolver)
+	{
+		m_physicsSolver = CreateDefaultSubobject<APCISPH_Solver>("PhysicsSolver");
+	}
+	else
+	{
+		m_physicsSolver = CreateDefaultSubobject<AParticleSystemSolver>("PhysicsSolver");
+	}
 }
 
 //The default initialisation will have 1000 particles in an area of 100 by 100 from the origin.

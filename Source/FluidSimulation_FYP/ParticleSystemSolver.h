@@ -24,26 +24,12 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	//exponent component of EOS(Tait's equation)
 	double m_eosExponent{ 1.0 }; //Becker and Teschner suggest 7 which is stiffer(will apply higher pressure for the same density offset). Muller suggests 1
-	//zero means clamping, one means do nothing
-	double m_negaitvePressureScale{ 0.0 };
 	double m_viscosityCoefficient{ 1.0 }; //original value is 0.01 but testing calculations suggest to use 0.1
 	//this is a minimum "safety-net" for SPH which is quite sensitive to the parameters.
 	double m_pseudoViscossityCoefficient{ 10.0 }; //this used to be 10.0
 	//Speed of sound in the medium to determine the stiffness of the system.
 	//This should be the actual speed of sound in the fluid but a lower value is better to trace-off performance and compressibility
 	double m_speedOfSound{ 100.0 };
-
-	//------------------------These values are only used for the PCISPH method-----------------------------
-	double m_maxDensityErrorRatio{ 0.01 };
-	unsigned int m_maxNumberOfIterations{ 5 };
-	TArray<FVector> m_tempPositions;
-	TArray<FVector> m_tempVelocities;
-	TArray<FVector> m_tempPressureForces;
-	TArray<double> m_densityErrors;
-	//-----------------------------------------------------------------------------------------------------
-
-	TArray<class AFluidParticle*>* m_ptrParticles;
-	class AFluidSimulation_FYPGameModeBase* m_gameMode;
 
 	//these are needed for post processing
 	TArray<FVector> m_newPositions;
@@ -68,20 +54,21 @@ public:
 	const double SampleScalarField(const FVector& _subject) const;
 
 protected:
+	TArray<class AFluidParticle*>* m_ptrParticles;
+	class AFluidSimulation_FYPGameModeBase* m_gameMode;
+	//zero means clamping, one means do nothing
+	double m_negaitvePressureScale{ 0.0 };
+
+	virtual void onBeginAdvanceTimeStep();
 	void accumulateForces(double timeStepInSeconds);
 	void accumulateExternalForces(double timeStepInSeconds);
 	void accumulateNonPressureForces(double timeStepInSeconds);
-	void accumulatePressureForce(double timeStepInSeconds);
-	void computePressureGradientForcePCISPH(double timeStepInSeconds, const TArray<double>& densities);
-	void accumulatePressureForcePCISPH(double timeStepInSeconds);
-	void computePressure();
+	virtual void accumulatePressureForce(double timeStepInSeconds);
 	void accumulateViscosityForce();
+	void computePressure();
 	void computePseudoViscosity(double timeStepInSeconds);
 	double computePressureFromEOS(double density, double targetDensity, double eosScale, double eosExponent, double negativePressureScale);
-	double computeDelta(double timeStepInSeconds);
-	double computeBeta(double timeStepInSeconds);
 
 	//only external forces will be taken into account here.
-	void resolveCollision();		
-	void resolveCollisionPCISPH();
+	void resolveCollision(TArray<FVector>* positions, TArray<FVector>* velocities);		
 };

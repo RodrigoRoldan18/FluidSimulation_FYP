@@ -71,6 +71,7 @@ public:
 	double GetTargetDensity() const { return m_targetDensity; }
 	double GetKernelRadius() const { return m_kernelRadius; }
 	double GetTargetSpacing() const { return m_targetSpacing; }
+	bool IsUsingPCISPH() const { return m_usePCISPHsolver; }
 	TArray<TArray<size_t>>* GetNeighbourLists() { return &m_neighbourLists; }
 
 	//Called every frame
