@@ -5,13 +5,14 @@
 
 void BCCLatticePointsGenerator::generate(const FVector& lowercorner, const FVector& uppercorner, double spacing, TArray<FVector>* points) const
 {
+	//Looks like we have uninitialised array. 
 	ForEachPoint(lowercorner, uppercorner, spacing, [&points](const FVector& point) {
-		points->Add(point);
+		points->Emplace(point);
 		return true;
 		});
 }
 
-void BCCLatticePointsGenerator::ForEachPoint(const FVector& lowercorner, const FVector& uppercorner, double spacing, const TFunction<bool(const FVector&)>& callback) const
+void BCCLatticePointsGenerator::ForEachPoint(const FVector& lowercorner, const FVector& uppercorner, double spacing, const ForEachBBCCallback& callback) const
 {
 	double halfSpacing = spacing / 2.0;
 	double boxWidth = uppercorner.X - lowercorner.X;

@@ -154,11 +154,8 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 			Mutex.Unlock();
 			});
 
-		//Resolve collisions
-		resolveCollision(&m_tempPositions, &m_tempVelocities);
-
-		//THIS IS FOR DEBUG
-		continue;
+		//Resolve collisions. DISABLED THIS FOR NOW. IT'S CAUSING FREEZE
+		//resolveCollision(&m_tempPositions, &m_tempVelocities); 
 
 		//Compute pressure from density error
 		ParallelFor(n, [&](size_t i) {

@@ -14,6 +14,8 @@ class FLUIDSIMULATION_FYP_API BCCLatticePointsGenerator
 	//	  http://mathworld.wolfram.com/CubicClosePacking.html
 
 public:
+	typedef TFunction<bool(const FVector&)> ForEachBBCCallback;
+
 	BCCLatticePointsGenerator() = default;
 	~BCCLatticePointsGenerator() = default;
 
@@ -21,5 +23,5 @@ public:
 	void generate(const FVector& lowercorner, const FVector& uppercorner, double spacing, TArray<FVector>* points) const;
 
 	//Invokes callback for each BCC-lattice points inside the bounds where spacing is the size of the unit cell of BCC structure.
-	void ForEachPoint(const FVector& lowercorner, const FVector& uppercorner, double spacing, const TFunction<bool(const FVector&)>& callback) const;
+	void ForEachPoint(const FVector& lowercorner, const FVector& uppercorner, double spacing, const ForEachBBCCallback& callback) const;
 };
