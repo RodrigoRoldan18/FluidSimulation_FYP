@@ -29,4 +29,5 @@ class FLUIDSIMULATION_FYP_API APCISPH_Solver : public AParticleSystemSolver
 protected:
 	void onBeginAdvanceTimeStep() override;
 	void accumulatePressureForce(double timeStepInSeconds) override;
+	void accumulateForces(double timeStepInSeconds) override;
 };

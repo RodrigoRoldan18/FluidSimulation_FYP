@@ -15,11 +15,11 @@ ACollider::ACollider()
 	//m_location = m_mesh->GetComponentTransform().GetLocation();
 }
 
-void ACollider::ResolveCollision(const FVector& currentPosition, const FVector& currentVelocity, double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity)
+void ACollider::ResolveCollision(double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity)
 {
 	ColliderQueryResult colliderPoint;
 
-	GetQueryResult(currentPosition, &colliderPoint);
+	GetQueryResult(*newPosition, &colliderPoint);
 
 	//Check if the new position is penetrating the surface
 	if (IsPenetrating(colliderPoint, *newPosition, radius))

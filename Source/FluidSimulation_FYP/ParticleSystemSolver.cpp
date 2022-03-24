@@ -151,7 +151,7 @@ void AParticleSystemSolver::onBeginAdvanceTimeStep()
 void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
 {
 	//STAGE 2 & 3	
-	accumulatePressureForce(timeStepInSeconds);	
+	accumulatePressureForce(timeStepInSeconds);
 	//STAGE 4
 	accumulateNonPressureForces(timeStepInSeconds);
 	//STAGE 5
@@ -341,16 +341,16 @@ double AParticleSystemSolver::computePressureFromEOS(double density, double targ
 void AParticleSystemSolver::resolveCollision(TArray<FVector>* positions, TArray<FVector>* velocities)
 {
 	//whitebox function, we will get to external collisions later
-
 	size_t n = m_ptrParticles->Num();
-	ParallelFor(n, [&](size_t i) {
-		for (ACollider* c : m_colliders)
+	const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
+
+	for (ACollider* c : m_colliders)
+	{
+		if (c != nullptr)
 		{
-			if (c != nullptr)
-			{
-				const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
-				c->ResolveCollision((*positions)[i], (*velocities)[i], kParticleRadius, m_restitutionCoefficient, &(*positions)[i], &(*velocities)[i]);
-			}
-		}		
-	});	
+			ParallelFor(n, [&](size_t i) {
+				c->ResolveCollision(kParticleRadius, m_restitutionCoefficient, &(*positions)[i], &(*velocities)[i]);
+				});
+		}
+	}
 }

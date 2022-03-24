@@ -24,7 +24,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	//exponent component of EOS(Tait's equation)
 	double m_eosExponent{ 1.0 }; //Becker and Teschner suggest 7 which is stiffer(will apply higher pressure for the same density offset). Muller suggests 1
-	double m_viscosityCoefficient{ 1.0 }; //original value is 0.01 but testing calculations suggest to use 0.1
+	double m_viscosityCoefficient{ 0.01 }; //original value is 0.01 but testing calculations suggest to use 0.1 TEMPORARY HACK FIX USE 10.0 FOR EXTRA VISCOUS
 	//this is a minimum "safety-net" for SPH which is quite sensitive to the parameters.
 	double m_pseudoViscossityCoefficient{ 10.0 }; //this used to be 10.0
 	//Speed of sound in the medium to determine the stiffness of the system.
@@ -60,7 +60,7 @@ protected:
 	double m_negaitvePressureScale{ 0.0 };
 
 	virtual void onBeginAdvanceTimeStep();
-	void accumulateForces(double timeStepInSeconds);
+	virtual void accumulateForces(double timeStepInSeconds);
 	void accumulateExternalForces(double timeStepInSeconds);
 	void accumulateNonPressureForces(double timeStepInSeconds);
 	virtual void accumulatePressureForce(double timeStepInSeconds);

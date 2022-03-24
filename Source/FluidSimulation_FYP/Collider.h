@@ -24,7 +24,7 @@ public:
 	// Sets default values for this actor's properties
 	ACollider();
 
-	void ResolveCollision(const FVector& currentPosition, const FVector& currentVelocity, double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity);
+	void ResolveCollision(double radius, double restitutionCoefficient, FVector* newPosition, FVector* newVelocity);
 	FVector VelocityAt(const FVector& point) const;
 	double ClosestDistance(const FVector& point) const;
 	FVector ClosestPoint(const FVector& point) const;

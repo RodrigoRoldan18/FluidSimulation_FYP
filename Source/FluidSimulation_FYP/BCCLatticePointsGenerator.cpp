@@ -5,9 +5,14 @@
 
 void BCCLatticePointsGenerator::generate(const FVector& lowercorner, const FVector& uppercorner, double spacing, TArray<FVector>* points) const
 {
-	//Looks like we have uninitialised array. 
+	//Looks like we have an infinite recursive loop. 
 	ForEachPoint(lowercorner, uppercorner, spacing, [&points](const FVector& point) {
-		points->Emplace(point);
+		if (points->Num() > 1000)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Points array has more than 1000 items in it. ABORT ERROR!"));
+			return false;
+		}
+		points->Add(point);
 		return true;
 		});
 }
@@ -18,6 +23,9 @@ void BCCLatticePointsGenerator::ForEachPoint(const FVector& lowercorner, const F
 	double boxWidth = uppercorner.X - lowercorner.X;
 	double boxHeight = uppercorner.Z - lowercorner.Z;
 	double boxDepth = uppercorner.Y - lowercorner.Y;
+
+	//Sometimes the dimensions are not generated correctly. 
+	UE_LOG(LogTemp, Warning, TEXT("Box Width: %f, Box Height: %f, Box Depth: %f"), boxWidth, boxHeight, boxDepth); //The box has dimension of 5.4 on all axis.
 
 	FVector position;
 	bool hasOffset = false;

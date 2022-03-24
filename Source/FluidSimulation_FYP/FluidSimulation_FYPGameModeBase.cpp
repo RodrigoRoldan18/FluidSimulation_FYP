@@ -16,14 +16,16 @@ AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 	UE_LOG(LogTemp, Warning, TEXT("Kernel radius: %f"), m_kernelRadius);
 
 	m_neighbourSearcher = CreateDefaultSubobject<UNeighbourSearch>("NeighbourSearcher");
-	if (m_usePCISPHsolver)
+	/*if (m_usePCISPHsolver)
 	{
 		m_physicsSolver = CreateDefaultSubobject<APCISPH_Solver>("PhysicsSolver");
 	}
 	else
 	{
 		m_physicsSolver = CreateDefaultSubobject<AParticleSystemSolver>("PhysicsSolver");
-	}
+	}*/
+
+	m_physicsSolver = CreateDefaultSubobject<AParticleSystemSolver>("PhysicsSolver");
 }
 
 //The default initialisation will have 1000 particles in an area of 100 by 100 from the origin.
@@ -51,7 +53,8 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 			numColumn = 0;
 			indexToResetPosition = i - 1;
 		}
-		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)), kParticleRadius * numColumn, kParticleRadius * numLevel + 10.0f);
+		//10.0f on X and Y moves the particles more to the middle, 10.0f on Z is to make them float a bit
+		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)) + 10.0f, kParticleRadius * numColumn + 10.0f, kParticleRadius * numLevel + 10.0f);
 
 		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(ParticleBP, newParticleLocation, FRotator().ZeroRotator);
 		newParticle->SetParticlePosition(newParticleLocation);

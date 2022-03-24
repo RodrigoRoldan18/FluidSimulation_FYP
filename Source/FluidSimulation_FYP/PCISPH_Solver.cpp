@@ -11,19 +11,10 @@ double APCISPH_Solver::computeDelta(double timeStepInSeconds)
 {
 	const double kernelRadius = m_gameMode->GetKernelRadius();
 	TArray<FVector> points;
-	FVector origin;
-	////might need to change this to reference the bound box
-	//BoundingBox3D boundingbox(origin, origin);
-	////inside this constructor for boundingbox:
-	//lowercorner.xyz = std::min(point1.xyz, point2.xyz);
-	//uppercorner.xyz = std::max(point1.xyz, point2.xyz);
+	FVector origin = FVector(0.0);
 
-	//boundingbox.expand(1.5 * kernelRadius);
-	////inside this "expand" function:
-	//lowercorner -= delta;
-	//uppercorner += delta;
-
-	FVector lowercorner, uppercorner;
+	FVector lowercorner = FVector(0.0);
+	FVector uppercorner = FVector(0.0);
 	lowercorner -= FVector(1.5 * kernelRadius);
 	uppercorner += FVector(1.5 * kernelRadius);
 
@@ -85,12 +76,14 @@ void APCISPH_Solver::computePressureGradientForce(double timeStepInSeconds, cons
 					((*m_ptrParticles)[i]->GetParticlePressure() / (densities[i] * densities[i]) +
 						(*m_ptrParticles)[j]->GetParticlePressure() / (densities[j] * densities[j])) *
 					kernel.Gradient(dist, dir);
+				Mutex.Lock();
 				m_tempPressureForces[i] = pressureForceResult;
+				Mutex.Unlock();
 			}
 		}
 		if (i == 723)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict pressure FORCE: %s"), *m_tempPressureForces[i].ToString());
 		}
 		});
 }
@@ -118,7 +111,8 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 	const size_t n = m_ptrParticles->Num();
 	const double targetDensity = m_gameMode->GetTargetDensity();
 	const double mass = (*m_ptrParticles)[0]->kMass;
-	const double delta = computeDelta(timeStepInSeconds);
+	const double delta = computeDelta(timeStepInSeconds); //the scalar maps the density to the optimal pressure that cancels out density error.
+	UE_LOG(LogTemp, Warning, TEXT("delta: %f"), delta);
 	//Predicted density ds
 	TArray<double> ds;
 	FSphStdKernel kernel(m_gameMode->GetKernelRadius());
@@ -152,10 +146,16 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 			m_tempVelocities[i] = predictVel;
 			m_tempPositions[i] = predictPos;
 			Mutex.Unlock();
+
+			if (i == 723)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict VELOCITY: %s"), *predictVel.ToString());
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict POSITION: %s"), *predictPos.ToString());
+			}
 			});
 
 		//Resolve collisions. DISABLED THIS FOR NOW. IT'S CAUSING FREEZE
-		//resolveCollision(&m_tempPositions, &m_tempVelocities); 
+		resolveCollision(&m_tempPositions, &m_tempVelocities); 
 
 		//Compute pressure from density error
 		ParallelFor(n, [&](size_t i) {
@@ -184,6 +184,13 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 			ds[i] = density;
 			m_densityErrors[i] = densityError;
 			Mutex.Unlock();
+
+			if (i == 723)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict DENSITY: %f"), density);
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict DENSITY ERROR: %f"), densityError);
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict PRESSURE: %f"), newParticlePressure);				
+			}
 			});
 
 		//Compute pressure gradient force
@@ -220,5 +227,19 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticleForce(newPressureForce);
 		Mutex.Unlock();
+		if (i == 723)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Particle 723 compute pressure FORCE: %s"), *newPressureForce.ToString());
+		}
 		});
+}
+
+void APCISPH_Solver::accumulateForces(double timeStepInSeconds)
+{
+	//STAGE 5
+	accumulateExternalForces(timeStepInSeconds);
+	//STAGE 4
+	accumulateNonPressureForces(timeStepInSeconds);
+	//STAGE 2 & 3	
+	accumulatePressureForce(timeStepInSeconds);
 }
