@@ -87,16 +87,16 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 			if (i != j)
 			{
 				m_neighbourLists[i].Add(j);
-				if (i == 723)
+				/*if (i == 723)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
-				}		
+				}*/		
 			}
 		});
-		if (i == 723)
+		/*if (i == 723)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle %i has %i particle neighbours"), i, m_neighbourLists[i].Num());
-		}
+		}*/
 	}
 }
 
@@ -143,10 +143,10 @@ void AFluidSimulation_FYPGameModeBase::UpdateDensities()
 		Mutex.Lock();
 		m_particles[i]->SetParticleDensity(m_particles[i]->kMass * sum);
 		Mutex.Unlock();
-		if (i == 723)
+		/*if (i == 723)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 DENSITY: %f. The sumOfKernelNearby is: %f"), m_particles[i]->GetParticleDensity(), sum);
-		}
+		}*/
 		});
 }
 

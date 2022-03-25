@@ -29,7 +29,7 @@ private:
 	//water density in kg/m^3
 	double m_targetDensity{ 0.001 }; //this should be 1000.0 but the pressure computation keeps returning negative values TEMPORARY HACK FIX IS 0.001
 	//target spacing in meters
-	double m_targetSpacing{ 1.5 }; //this should be 0.02 based on the water drop test but we are keeping it as 1 because of the particle radius 1.5 worked fine for 2000 particles
+	double m_targetSpacing{ 1.0 }; //this should be 0.02 based on the water drop test but we are keeping it as 1 because of the particle radius 1.5 worked fine for 2000 particles
 	//kernel radius in meters
 	double m_kernelRadius;
 	double m_kernelRadiusOverTargetSpacing{ 1.8 };
@@ -38,7 +38,7 @@ private:
 	int32 m_numOfParticles{ 2000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	bool m_usePCISPHsolver{ true };
+	bool m_usePCISPHsolver{ false };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	FVector2D m_simulationDimensions { FVector2D(60.0f, 10.0f) };

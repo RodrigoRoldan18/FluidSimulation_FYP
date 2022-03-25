@@ -81,10 +81,10 @@ void APCISPH_Solver::computePressureGradientForce(double timeStepInSeconds, cons
 				Mutex.Unlock();
 			}
 		}
-		if (i == 723)
+		/*if (i == 723)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict pressure FORCE: %s"), *m_tempPressureForces[i].ToString());
-		}
+		}*/
 		});
 }
 
@@ -112,7 +112,7 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 	const double targetDensity = m_gameMode->GetTargetDensity();
 	const double mass = (*m_ptrParticles)[0]->kMass;
 	const double delta = computeDelta(timeStepInSeconds); //the scalar maps the density to the optimal pressure that cancels out density error.
-	UE_LOG(LogTemp, Warning, TEXT("delta: %f"), delta);
+	//UE_LOG(LogTemp, Warning, TEXT("delta: %f"), delta);
 	//Predicted density ds
 	TArray<double> ds;
 	FSphStdKernel kernel(m_gameMode->GetKernelRadius());
@@ -147,11 +147,11 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 			m_tempPositions[i] = predictPos;
 			Mutex.Unlock();
 
-			if (i == 723)
+			/*if (i == 723)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict VELOCITY: %s"), *predictVel.ToString());
 				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict POSITION: %s"), *predictPos.ToString());
-			}
+			}*/
 			});
 
 		//Resolve collisions. DISABLED THIS FOR NOW. IT'S CAUSING FREEZE
@@ -185,12 +185,12 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 			m_densityErrors[i] = densityError;
 			Mutex.Unlock();
 
-			if (i == 723)
+			/*if (i == 723)
 			{
 				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict DENSITY: %f"), density);
 				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict DENSITY ERROR: %f"), densityError);
 				UE_LOG(LogTemp, Warning, TEXT("Particle 723 predict PRESSURE: %f"), newParticlePressure);				
-			}
+			}*/
 			});
 
 		//Compute pressure gradient force
@@ -212,13 +212,13 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 		}
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Number of PCI iterations: %i"), maxNumberIter);
+	/*UE_LOG(LogTemp, Warning, TEXT("Number of PCI iterations: %i"), maxNumberIter);
 	UE_LOG(LogTemp, Warning, TEXT("Max density error after PCI iteration: %f"), maxDensityError);
 	if (FMath::Abs(densityErrorRatio) > m_maxDensityErrorRatio)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Max density error ration is greater than the threshold!"));
 		UE_LOG(LogTemp, Warning, TEXT("Ratio: %f, Threshold: %f"), densityErrorRatio, m_maxDensityErrorRatio);
-	}
+	}*/
 
 	//Accumulate pressure force
 	ParallelFor(n, [&](size_t i) {
@@ -227,10 +227,10 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticleForce(newPressureForce);
 		Mutex.Unlock();
-		if (i == 723)
+		/*if (i == 723)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 compute pressure FORCE: %s"), *newPressureForce.ToString());
-		}
+		}*/
 		});
 }
 
