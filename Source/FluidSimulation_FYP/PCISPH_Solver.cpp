@@ -155,7 +155,7 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 			});
 
 		//Resolve collisions. DISABLED THIS FOR NOW. IT'S CAUSING FREEZE
-		resolveCollision(&m_tempPositions, &m_tempVelocities); 
+		//resolveCollision(&m_tempPositions, &m_tempVelocities); 
 
 		//Compute pressure from density error
 		ParallelFor(n, [&](size_t i) {

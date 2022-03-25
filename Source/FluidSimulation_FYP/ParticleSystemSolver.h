@@ -20,7 +20,7 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	const FVector m_kWind{ FVector(10.0f, 25.0f, 0.0f) }; //test wind (vector field)
 	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
 	double m_restitutionCoefficient{ 0.0 };
-	double m_dragCoefficient{ 0.001 }; //1e-4 TEMPORARY HACK FIX
+	double m_dragCoefficient{ 1e-4 }; //1e-4 TEMPORARY HACK FIX
 
 	//exponent component of EOS(Tait's equation)
 	double m_eosExponent{ 1.0 }; //Becker and Teschner suggest 7 which is stiffer(will apply higher pressure for the same density offset). Muller suggests 1
