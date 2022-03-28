@@ -15,7 +15,7 @@ class FLUIDSIMULATION_FYP_API AFluidParticle : public AActor
 	class UStaticMeshComponent* Mesh;
 
 	FVector m_position;
-	FVector m_velocity{ FVector(0.0f, 0.0f, 10.0f) };
+	FVector m_velocity{ FVector(0.0f) };
 	FVector m_force{ 0.0f };
 	double m_density{ 0.0 };
 	double m_pressure{ 0.0 };

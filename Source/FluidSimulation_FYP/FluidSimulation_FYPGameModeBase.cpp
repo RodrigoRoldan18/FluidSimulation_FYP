@@ -213,12 +213,7 @@ void AFluidSimulation_FYPGameModeBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	m_physicsSolver->OnAdvanceTimeStep(DeltaTime);
-	//UE_LOG(LogTemp, Warning, TEXT("TESTING GAMEMODE TICK"));
-}
-
-void AFluidSimulation_FYPGameModeBase::EndPlay(EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
+	//UE_LOG(LogTemp, Warning, TEXT("DeltaTime: %f"), DeltaTime);
 }
 
 void AFluidSimulation_FYPGameModeBase::BeginPlay()

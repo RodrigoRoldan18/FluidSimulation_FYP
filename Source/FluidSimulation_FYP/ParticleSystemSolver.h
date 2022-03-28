@@ -20,13 +20,13 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 	const FVector m_kWind{ FVector(10.0f, 25.0f, 0.0f) }; //test wind (vector field)
 	const FVector m_kGravity{ FVector(0.0f, 0.0f, -9.8f) };
 	double m_restitutionCoefficient{ 0.0 };
-	double m_dragCoefficient{ 1e-4 }; //1e-4 TEMPORARY HACK FIX
+	double m_dragCoefficient{ 1e-4 };
 
 	//exponent component of EOS(Tait's equation)
 	double m_eosExponent{ 1.0 }; //Becker and Teschner suggest 7 which is stiffer(will apply higher pressure for the same density offset). Muller suggests 1
 	double m_viscosityCoefficient{ 0.01 }; //original value is 0.01 but testing calculations suggest to use 0.1 TEMPORARY HACK FIX USE 10.0 FOR EXTRA VISCOUS
 	//this is a minimum "safety-net" for SPH which is quite sensitive to the parameters.
-	double m_pseudoViscossityCoefficient{ 10.0 }; //this used to be 10.0
+	double m_pseudoViscosityCoefficient{ 10.0 }; //this used to be 10.0
 	//Speed of sound in the medium to determine the stiffness of the system.
 	//This should be the actual speed of sound in the fluid but a lower value is better to trace-off performance and compressibility
 	double m_speedOfSound{ 100.0 };

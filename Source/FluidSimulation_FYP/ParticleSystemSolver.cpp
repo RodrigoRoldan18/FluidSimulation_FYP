@@ -241,6 +241,7 @@ void AParticleSystemSolver::computePressure()
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 		double pressure = computePressureFromEOS((*m_ptrParticles)[i]->GetParticleDensity(), targetDensity, eosScale, m_eosExponent, m_negaitvePressureScale);
+		pressure /= 100.0; //PRESSURE VALUE IS TOO HIGH!!!!! THIS IS A HACK FIX!!! 
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticlePressure(pressure);
 		Mutex.Unlock();
@@ -313,7 +314,7 @@ void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
 		smoothedVelocities[i] = smoothedVelocity;
 		});
 
-	double factor = timeStepInSeconds * m_pseudoViscossityCoefficient;
+	double factor = timeStepInSeconds * m_pseudoViscosityCoefficient;
 	factor = FMath::Clamp(factor, 0.0, 1.0);
 
 	FCriticalSection Mutex;
@@ -327,7 +328,10 @@ void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
 
 double AParticleSystemSolver::computePressureFromEOS(double density, double targetDensity, double eosScale, double eosExponent, double negativePressureScale)
 {
-	double p = eosScale / eosExponent * (FMath::Pow((density / targetDensity), eosExponent) - 1.0); //THIS IS GIVING A NEGATIVE SOLUTION. Maybe the density is too low. Lowered the target density to compensate.
+	// See Murnaghan-Tait equation of state from
+	// https://en.wikipedia.org/wiki/Tait_equation
+
+	double p = eosScale / eosExponent * (FMath::Pow((density / targetDensity), eosExponent) - 1.0);
 
 	//Negative pressure scaling
 	if (p < 0)

@@ -27,9 +27,9 @@ private:
 	TArray<TArray<size_t>> m_neighbourLists;
 
 	//water density in kg/m^3
-	double m_targetDensity{ 0.001 }; //this should be 1000.0 but the pressure computation keeps returning negative values TEMPORARY HACK FIX IS 0.001
+	double m_targetDensity{ 1.0 }; //this should be 1000.0 but the pressure computation keeps returning negative values TEMPORARY HACK FIX IS 1.0
 	//target spacing in meters
-	double m_targetSpacing{ 1.0 }; //this should be 0.02 based on the water drop test but we are keeping it as 1 because of the particle radius 1.5 worked fine for 2000 particles
+	double m_targetSpacing{ 1.0 }; //this should be 0.02 based on the water drop test but we are keeping it as 1 because of the particle radius 1.5 worked fine for 2000 particles. Particle radius is 1.0 therefore targetSpacing should be 20.0 (It's too big imo)
 	//kernel radius in meters
 	double m_kernelRadius;
 	double m_kernelRadiusOverTargetSpacing{ 1.8 };
@@ -76,7 +76,6 @@ public:
 
 	//Called every frame
 	virtual void Tick(float DeltaTime) override;
-	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
 
 protected:
 	virtual void BeginPlay() override;

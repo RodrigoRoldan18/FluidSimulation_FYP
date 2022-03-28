@@ -14,7 +14,7 @@ class FLUIDSIMULATION_FYP_API APCISPH_Solver : public AParticleSystemSolver
 {
 	GENERATED_BODY()
 
-	double m_maxDensityErrorRatio{ 0.01 };
+	double m_maxDensityErrorRatio{ 0.1 };
 	unsigned int m_maxNumberOfIterations{ 5 };
 
 	TArray<FVector> m_tempPositions;

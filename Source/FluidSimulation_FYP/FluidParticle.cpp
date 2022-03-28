@@ -5,7 +5,7 @@
 
 //static variables definition
 const double AFluidParticle::kRadius = 1.0; //this should be 1e-3
-const double AFluidParticle::kMass = 1e-3; //this should be 1e-3
+const double AFluidParticle::kMass = 1.0; //this should be 1e-3
 
 // Sets default values
 AFluidParticle::AFluidParticle()

@@ -178,6 +178,7 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 				densityError *= m_negaitvePressureScale;
 			}
 			double newParticlePressure = (*m_ptrParticles)[i]->GetParticlePressure() + pressure;
+			newParticlePressure /= 100.0; //PRESSURE VALUE IS TOO HIGH!!!!! THIS IS A HACK FIX!!! 
 
 			Mutex.Lock();
 			(*m_ptrParticles)[i]->SetParticlePressure(newParticlePressure);

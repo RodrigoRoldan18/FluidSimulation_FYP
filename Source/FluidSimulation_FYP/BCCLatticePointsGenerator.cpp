@@ -25,7 +25,7 @@ void BCCLatticePointsGenerator::ForEachPoint(const FVector& lowercorner, const F
 	double boxDepth = uppercorner.Y - lowercorner.Y;
 
 	//Sometimes the dimensions are not generated correctly. 
-	UE_LOG(LogTemp, Warning, TEXT("Box Width: %f, Box Height: %f, Box Depth: %f"), boxWidth, boxHeight, boxDepth); //The box has dimension of 5.4 on all axis.
+	//UE_LOG(LogTemp, Warning, TEXT("Box Width: %f, Box Height: %f, Box Depth: %f"), boxWidth, boxHeight, boxDepth); //The box has dimension of 5.4 on all axis.
 
 	FVector position;
 	bool hasOffset = false;
