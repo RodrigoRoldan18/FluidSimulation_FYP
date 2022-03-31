@@ -7,6 +7,7 @@
 #include "Kernels.h"
 #include "BCCLatticePointsGenerator.h"
 #include "Collider.h"
+#include "PointParticleEmitter.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Runtime/Core/Public/Async/ParallelFor.h"
@@ -103,6 +104,14 @@ void AParticleSystemSolver::initPhysicsSolver(TArray<AFluidParticle*>* ptrPartic
 		ACollider* castCollider = Cast<ACollider>(a);
 		m_colliders.Push(castCollider);
 	}
+
+	AActor* foundEmitter = UGameplayStatics::GetActorOfClass(GetWorld(), APointParticleEmitter::StaticClass());
+	if (foundEmitter)
+	{
+		APointParticleEmitter* castEmitter = Cast<APointParticleEmitter>(foundEmitter);
+		m_emitter = castEmitter;
+		m_emitter->Initialise(ptrParticles);
+	}
 	//UE_LOG(LogTemp, Warning, TEXT("we have %i colliders in the world"), m_colliders.Num());
 }
 
@@ -111,6 +120,11 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 	if (m_ptrParticles == nullptr)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("particles pointer isn't initialised"));
+		return;
+	}
+	if (m_ptrParticles->Num() == 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("particles array is empty"));
 		return;
 	}
 	beginAdvanceTimeStep();

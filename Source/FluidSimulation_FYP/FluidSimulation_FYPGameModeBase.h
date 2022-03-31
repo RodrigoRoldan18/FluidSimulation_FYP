@@ -35,7 +35,7 @@ private:
 	double m_kernelRadiusOverTargetSpacing{ 1.8 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	int32 m_numOfParticles{ 2000 };
+	int32 m_numOfParticles{ 5000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	bool m_usePCISPHsolver{ false };

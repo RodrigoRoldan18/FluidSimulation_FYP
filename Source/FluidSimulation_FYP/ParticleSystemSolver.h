@@ -37,8 +37,8 @@ class FLUIDSIMULATION_FYP_API AParticleSystemSolver : public AActor
 
 	//rigid body obstacle in the simulation
 	TArray<class ACollider*> m_colliders;
-	//Where the particles spawn from (like a fountain) THIS IS FOR FUTURE IMPLEMENTATION
-	//class AParticleEmitter* m_emitter;
+	//Where the particles spawn from (like a fountain)
+	class APointParticleEmitter* m_emitter;
 
 public:	
 	// Sets default values for this component's properties

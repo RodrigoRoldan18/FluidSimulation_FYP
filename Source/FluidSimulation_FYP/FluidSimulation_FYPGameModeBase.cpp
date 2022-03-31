@@ -37,7 +37,7 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 	int numLevel = 1;
 	int indexToResetPosition = 0;
 
-	for (size_t i = 0; i < m_numOfParticles; i++)
+	for (size_t i = 0; i < 3000; i++)
 	{
 		if (kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)) > m_simulationDimensions.X)
 		{
