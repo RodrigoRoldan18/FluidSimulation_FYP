@@ -30,7 +30,7 @@ class FLUIDSIMULATION_FYP_API APointParticleEmitter : public AActor
 	size_t m_maxNumOfParticles{ 200 };
 
 	double m_speed{ 10.0 };
-	double m_spreadAngleInDegrees{ 90.0 };
+	double m_spreadAngleInDegrees{ 20.0 };
 
 public:	
 	// Sets default values for this actor's properties
@@ -39,4 +39,7 @@ public:
 
 	void Initialise(TArray<class AFluidParticle*>* ptrParticles);
 	void Emit();
+
+	//Returns a randomly sampled direction within a cone. 
+	FVector UniformSampleCone(double rand1, double rand2, const FVector& axis, double angle);
 };
