@@ -7,6 +7,7 @@
 #include "ParticleSystemSolver.h"
 #include "PCISPH_Solver.h"
 #include "Kernels.h"
+#include "Async/Async.h"
 
 AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 {
@@ -30,6 +31,8 @@ AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 void AFluidSimulation_FYPGameModeBase::initSimulation()
 {
 	resize(m_numOfParticles);
+
+	//return;
 
 	static FVector newParticleLocation;
 	int particleLimitX = m_simulationDimensions.X / kParticleRadius;
@@ -136,9 +139,11 @@ double AFluidSimulation_FYPGameModeBase::Interpolate(const FVector& origin, cons
 //this function needs to be called first to initialise the densities
 void AFluidSimulation_FYPGameModeBase::UpdateDensities()
 {
+	//Async(EAsyncExecution::Thread, [&]() {
 	size_t n = GetNumberOfParticles();
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
+	//for (size_t i = 0; i < n; i++)		
 		double sum = sumOfKernelNearby(m_particles[i]->GetParticlePosition(), i == 723 ? true : false);
 		Mutex.Lock();
 		m_particles[i]->SetParticleDensity(m_particles[i]->kMass * sum);
@@ -147,7 +152,8 @@ void AFluidSimulation_FYPGameModeBase::UpdateDensities()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 DENSITY: %f. The sumOfKernelNearby is: %f"), m_particles[i]->GetParticleDensity(), sum);
 		}*/
-		});
+		
+	});
 }
 
 double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin, bool testPrint) const
@@ -214,6 +220,37 @@ void AFluidSimulation_FYPGameModeBase::Tick(float DeltaTime)
 
 	m_physicsSolver->OnAdvanceTimeStep(DeltaTime);
 	//UE_LOG(LogTemp, Warning, TEXT("DeltaTime: %f"), DeltaTime);
+
+	//PrintCalcData();
+}
+
+void AFluidSimulation_FYPGameModeBase::EndPlay(EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+
+	if (m_currentRunningThread && m_baseThread)
+	{
+		//this simulates a mutex
+		m_currentRunningThread->Suspend(true);
+		m_baseThread->bStopThread = true;
+		m_currentRunningThread->Suspend(false);
+		m_currentRunningThread->Kill(false);
+		m_currentRunningThread->WaitForCompletion();
+		delete m_baseThread;
+	}
+}
+
+void AFluidSimulation_FYPGameModeBase::InitThreadCalculations(int32 calculations)
+{
+	if (calculations > 0)
+	{
+		m_baseThread = new FBaseThread(calculations, this);
+		m_currentRunningThread = FRunnableThread::Create(m_baseThread, TEXT("Base Thread"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Calculations must be greater than 0"));
+	}
 }
 
 void AFluidSimulation_FYPGameModeBase::BeginPlay()
@@ -222,4 +259,15 @@ void AFluidSimulation_FYPGameModeBase::BeginPlay()
 
 	initSimulation();
 	m_physicsSolver->initPhysicsSolver(&m_particles, this);
+
+	//InitThreadCalculations(50);
+}
+
+void AFluidSimulation_FYPGameModeBase::PrintCalcData()
+{
+	//Dequeue - removes and returns the item from the tail of the queue and holds it in m_processedCalculation
+	if (!ThreadQueue.IsEmpty() && ThreadQueue.Dequeue(m_processedCalculation))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Precessed calculation: %d"), m_processedCalculation);
+	}
 }

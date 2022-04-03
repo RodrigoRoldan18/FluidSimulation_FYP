@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "Core/Public/HAL/Runnable.h"
-#include "Core/Public/HAL/RunnableThread.h"
+#include "BaseThread.h"
+#include "HAL/Runnable.h"
+#include "HAL/RunnableThread.h"
 #include "FluidSimulation_FYPGameModeBase.generated.h"
 
 /**
@@ -38,7 +39,7 @@ private:
 	int32 m_numOfParticles{ 5000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	bool m_usePCISPHsolver{ false };
+	bool m_usePCISPHsolver{ true };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	FVector2D m_simulationDimensions { FVector2D(60.0f, 10.0f) };
@@ -77,6 +78,21 @@ public:
 	//Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void EndPlay(EEndPlayReason::Type EndPlayReason) override;
+
+	UFUNCTION(BlueprintCallable, Category = "ThreadCalculations")
+	void InitThreadCalculations(int32 calculations);
+
+	TQueue<int32> ThreadQueue;
+
 protected:
 	virtual void BeginPlay() override;
+	
+	void PrintCalcData();
+	int32 m_processedCalculation;
+
+	class FBaseThread* m_baseThread = nullptr;
+
+	//hold the container
+	FRunnableThread* m_currentRunningThread = nullptr;
 };

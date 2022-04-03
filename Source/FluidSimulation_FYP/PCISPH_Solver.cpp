@@ -11,10 +11,10 @@ double APCISPH_Solver::computeDelta(double timeStepInSeconds)
 {
 	const double kernelRadius = m_gameMode->GetKernelRadius();
 	TArray<FVector> points;
-	FVector origin = FVector(0.0);
+	FVector origin = FVector(0.0f);
 
-	FVector lowercorner = FVector(0.0);
-	FVector uppercorner = FVector(0.0);
+	FVector lowercorner = FVector(0.0f);
+	FVector uppercorner = FVector(0.0f);
 	lowercorner -= FVector(1.5 * kernelRadius);
 	uppercorner += FVector(1.5 * kernelRadius);
 
@@ -28,26 +28,27 @@ double APCISPH_Solver::computeDelta(double timeStepInSeconds)
 	FVector denom1;
 	double denom2 = 0;
 
-	for (size_t i = 0; i < points.Num(); ++i)
-	{
+	size_t n = points.Num();
+
+	ParallelFor(n, [&](size_t i) {
 		const FVector& point = points[i];
 		double distanceSquared = point.SizeSquared();
 
 		if (distanceSquared < kernelRadius * kernelRadius)
 		{
 			double distance = FMath::Sqrt(distanceSquared);
-			FVector direction = (distance > 0.0) ? point / distance : FVector();
+			FVector direction = (distance > 0.0) ? point / distance : FVector(0.0f);
 
 			//grad(Wij)
 			FVector gradWij = kernel.Gradient(distance, direction);
 			denom1 += gradWij;
 			denom2 += FVector::DotProduct(gradWij, gradWij);
 		}
-	}
+	});	
 
 	denom += FVector::DotProduct(-denom1, denom1) - denom2;
 
-	return (FMath::Abs(denom) > 0.0) ? -1 / (computeBeta(timeStepInSeconds) * denom) : 0;
+	return (FMath::Abs(denom) > 0.0) ? -1 / (computeBeta(timeStepInSeconds) * denom) : 0.0;
 }
 
 double APCISPH_Solver::computeBeta(double timeStepInSeconds)
@@ -76,9 +77,9 @@ void APCISPH_Solver::computePressureGradientForce(double timeStepInSeconds, cons
 					((*m_ptrParticles)[i]->GetParticlePressure() / (densities[i] * densities[i]) +
 						(*m_ptrParticles)[j]->GetParticlePressure() / (densities[j] * densities[j])) *
 					kernel.Gradient(dist, dir);
-				Mutex.Lock();
+				//Mutex.Lock();
 				m_tempPressureForces[i] = pressureForceResult;
-				Mutex.Unlock();
+				//Mutex.Unlock();
 			}
 		}
 		/*if (i == 723)
@@ -125,8 +126,11 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 	ParallelFor(n, [&](size_t i) {
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticlePressure(0.0);
-		ds[i] = (*m_ptrParticles)[i]->GetParticleDensity();
 		Mutex.Unlock();
+		m_tempPressureForces[i] = FVector(0.0f);
+		m_densityErrors[i] = 0.0;
+		ds[i] = (*m_ptrParticles)[i]->GetParticleDensity();
+		//Mutex.Unlock();
 		});
 
 	unsigned int maxNumberIter = 0;
@@ -142,10 +146,10 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 
 			FVector predictPos = (*m_ptrParticles)[i]->GetParticlePosition() + timeStepInSeconds * predictVel;
 
-			Mutex.Lock();
+			//Mutex.Lock();
 			m_tempVelocities[i] = predictVel;
 			m_tempPositions[i] = predictPos;
-			Mutex.Unlock();
+			//Mutex.Unlock();
 
 			/*if (i == 723)
 			{
@@ -182,9 +186,10 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 
 			Mutex.Lock();
 			(*m_ptrParticles)[i]->SetParticlePressure(newParticlePressure);
+			Mutex.Unlock();
 			ds[i] = density;
 			m_densityErrors[i] = densityError;
-			Mutex.Unlock();
+			//Mutex.Unlock();
 
 			/*if (i == 723)
 			{

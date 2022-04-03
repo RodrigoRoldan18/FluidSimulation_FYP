@@ -27,7 +27,7 @@ class FLUIDSIMULATION_FYP_API APointParticleEmitter : public AActor
 
 	size_t m_numOfEmittedParticles{ 0 };
 	size_t m_maxNumOfParticlesPerSecond{ 10 };
-	size_t m_maxNumOfParticles{ 200 };
+	size_t m_maxNumOfParticles{ 1000 };
 
 	double m_speed{ 10.0 };
 	double m_spreadAngleInDegrees{ 20.0 };

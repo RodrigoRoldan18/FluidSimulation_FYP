@@ -11,6 +11,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Runtime/Core/Public/Async/ParallelFor.h"
+#include "Async/Async.h"
 
 void AParticleSystemSolver::beginAdvanceTimeStep()
 {
@@ -35,7 +36,6 @@ void AParticleSystemSolver::beginAdvanceTimeStep()
 		UE_LOG(LogTemp, Warning, TEXT("game mode pointer isn't initialised"));
 		return;
 	}
-
 	onBeginAdvanceTimeStep();
 }
 
@@ -61,9 +61,12 @@ void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
 {
 	//STAGE 6 - PERFORM TIME INTEGRATION
 
+	//Async(EAsyncExecution::Thread, [&]() {
 	size_t n = m_ptrParticles->Num();
 
 	ParallelFor(n, [&](size_t i) {
+	//for(size_t i = 0; i < n; i++)
+		
 		//Integrate velocity first
 		FVector& newVelocity = m_newVelocities[i];
 		newVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + timeIntervalInSeconds *
@@ -80,7 +83,7 @@ void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 NEW POSITION: %s"), *(*m_ptrParticles)[i]->GetParticlePosition().ToString());
 		}*/
-		});
+	});	
 }
 
 // Sets default values for this component's properties
@@ -175,10 +178,13 @@ void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
 void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 {
 	//STAGE 5 - COMPUTE THE GRAVITY AND OTHER EXTERNAL FORCES
+
+	//Async(EAsyncExecution::Thread, [&]() {
 	size_t n = m_ptrParticles->Num();
 
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
+	//for(size_t i = 0; i < n; i++)
 		//Gravity
 		FVector force = (*m_ptrParticles)[i]->kMass * m_kGravity;
 
@@ -200,7 +206,7 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 external FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
 		}*/
-		});
+	});
 }
 
 void AParticleSystemSolver::accumulateNonPressureForces(double timeStepInSeconds)
@@ -215,6 +221,8 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 	//STAGE 3 - COMPUTE THE GRADIENT PRESSURE FORCE
 
 	//do the accumulatepressureforce function here
+
+	//Async(EAsyncExecution::Thread, [&]() {
 	size_t n = m_ptrParticles->Num();
 
 	const double massSquared = (*m_ptrParticles)[0]->kMass * (*m_ptrParticles)[0]->kMass;
@@ -222,6 +230,7 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
+	//for(size_t i = 0; i < n; i++)
 		const auto& neighbours = (*m_gameMode->GetNeighbourLists())[i];
 		for (size_t j : neighbours)
 		{
@@ -231,29 +240,33 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 				FVector dir = ((*m_ptrParticles)[j]->GetParticlePosition() - (*m_ptrParticles)[i]->GetParticlePosition()) / dist;
 				FVector pressureForceResult = (*m_ptrParticles)[i]->GetParticleForce() - massSquared *
 					((*m_ptrParticles)[i]->GetParticlePressure() / ((*m_ptrParticles)[i]->GetParticleDensity() * (*m_ptrParticles)[i]->GetParticleDensity()) +
-					(*m_ptrParticles)[j]->GetParticlePressure() / ((*m_ptrParticles)[j]->GetParticleDensity() * (*m_ptrParticles)[j]->GetParticleDensity())) *
+						(*m_ptrParticles)[j]->GetParticlePressure() / ((*m_ptrParticles)[j]->GetParticleDensity() * (*m_ptrParticles)[j]->GetParticleDensity())) *
 					kernel.Gradient(dist, dir);
 				Mutex.Lock();
 				(*m_ptrParticles)[i]->SetParticleForce(pressureForceResult);
-				Mutex.Unlock();				
+				Mutex.Unlock();
 			}
 		}
 		/*if (i == 723)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
-		}*/
-	});
+		}*/		
+		
+	});	
 }
 
 void AParticleSystemSolver::computePressure()
 {
 	//STAGE 2 - COMPUTE THE PRESSURE BASED ON THE DENSITY
+
+	//Async(EAsyncExecution::Thread, [&]() {
 	size_t n = m_ptrParticles->Num();
 	const double targetDensity = m_gameMode->GetTargetDensity();
 	const double eosScale = targetDensity * (m_speedOfSound * m_speedOfSound);
-	
+
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
+	//for (size_t i = 0; i < n; i++)
 		double pressure = computePressureFromEOS((*m_ptrParticles)[i]->GetParticleDensity(), targetDensity, eosScale, m_eosExponent, m_negaitvePressureScale);
 		pressure /= 100.0; //PRESSURE VALUE IS TOO HIGH!!!!! THIS IS A HACK FIX!!! 
 		Mutex.Lock();
@@ -263,12 +276,15 @@ void AParticleSystemSolver::computePressure()
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 PRESSURE: %f"), (*m_ptrParticles)[i]->GetParticlePressure());
 		}*/
-		});
+		
+	});	
 }
 
 void AParticleSystemSolver::accumulateViscosityForce()
 {
 	//STAGE 4 - COMPUTE THE VISCOSITY FORCE
+
+	//Async(EAsyncExecution::Thread, [&]() {
 	size_t n = m_ptrParticles->Num();
 
 	const double massSquared = (*m_ptrParticles)[0]->kMass * (*m_ptrParticles)[0]->kMass;
@@ -276,6 +292,7 @@ void AParticleSystemSolver::accumulateViscosityForce()
 
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
+	//for (size_t i = 0; i < n; i++)
 		const auto& neighbours = (*m_gameMode->GetNeighbourLists())[i];
 		for (size_t j : neighbours)
 		{
@@ -285,13 +302,14 @@ void AParticleSystemSolver::accumulateViscosityForce()
 				kernel.SecondDerivative(dist);
 			Mutex.Lock();
 			(*m_ptrParticles)[i]->SetParticleForce(viscosityForceResult);
-			Mutex.Unlock();			
+			Mutex.Unlock();
 		}
 		/*if (i == 723)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle 723 viscosity FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
 		}*/
-		});
+						
+	});
 }
 
 void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
@@ -358,7 +376,8 @@ double AParticleSystemSolver::computePressureFromEOS(double density, double targ
 
 void AParticleSystemSolver::resolveCollision(TArray<FVector>* positions, TArray<FVector>* velocities)
 {
-	//whitebox function, we will get to external collisions later
+	//whitebox function
+
 	size_t n = m_ptrParticles->Num();
 	const float kParticleRadius = (*m_ptrParticles)[0]->kRadius;
 
