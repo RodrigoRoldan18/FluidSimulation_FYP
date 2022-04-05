@@ -13,14 +13,20 @@
 #include "Runtime/Core/Public/Async/ParallelFor.h"
 #include "Async/Async.h"
 
+void AParticleSystemSolver::onBeginAdvanceTimeStep()
+{
+}
+
 void AParticleSystemSolver::beginAdvanceTimeStep()
 {
 	//Allocate buffers
-	size_t n = m_ptrParticles->Num();
+	size_t n = m_gameMode->GetNumberOfParticles();
 	m_newPositions.Reserve(n);
 	m_newVelocities.Reserve(n);
 	m_newPositions.SetNumZeroed(n);
 	m_newVelocities.SetNumZeroed(n);
+
+	n = m_ptrParticles->Num();
 
 	//Clear forces
 	FCriticalSection Mutex;
@@ -155,14 +161,6 @@ const FVector AParticleSystemSolver::SampleVectorField(const FVector& _subject, 
 const double AParticleSystemSolver::SampleScalarField(const FVector& _subject) const
 {
 	return FMath::Sin(_subject.X) * FMath::Sin(_subject.Y) * FMath::Sin(_subject.Z);
-}
-
-void AParticleSystemSolver::onBeginAdvanceTimeStep()
-{
-	//STAGE 1 - MEASURE DENSITY WITH PARTICLES' CURRENT LOCATIONS
-	m_gameMode->BuildNeighbourSearcher();
-	m_gameMode->BuildNeighbourLists();
-	m_gameMode->UpdateDensities();
 }
 
 void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
@@ -314,12 +312,14 @@ void AParticleSystemSolver::accumulateViscosityForce()
 
 void AParticleSystemSolver::computePseudoViscosity(double timeStepInSeconds)
 {
-	size_t n = m_ptrParticles->Num();
+	size_t n = m_gameMode->GetNumberOfParticles();
 	const double mass = (*m_ptrParticles)[0]->kMass;
 	const FSphSpikyKernel kernel(m_gameMode->GetKernelRadius());
 	TArray<FVector> smoothedVelocities;
 	smoothedVelocities.Reserve(n);
 	smoothedVelocities.SetNumZeroed(n);
+
+	n = m_ptrParticles->Num();
 
 	ParallelFor(n, [&](size_t i) {
 		double weightSum = 0.0f;

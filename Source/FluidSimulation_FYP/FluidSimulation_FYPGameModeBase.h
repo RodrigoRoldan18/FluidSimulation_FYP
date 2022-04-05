@@ -67,7 +67,7 @@ public:
 	FVector GradientAt(size_t i, const TArray<double>& values) const;
 	double LaplacianAt(size_t i, const TArray<double>& values) const;
 
-	size_t GetNumberOfParticles() const { return m_particles.Num(); }
+	size_t GetNumberOfParticles() const { return m_numOfParticles; }
 	TArray<class AFluidParticle*>* GetParticleArrayPtr() { return &m_particles; }
 	double GetTargetDensity() const { return m_targetDensity; }
 	double GetKernelRadius() const { return m_kernelRadius; }

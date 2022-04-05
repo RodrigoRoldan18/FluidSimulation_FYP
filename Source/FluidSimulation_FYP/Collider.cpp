@@ -43,6 +43,9 @@ void ACollider::ResolveCollision(double radius, double restitutionCoefficient, F
 			relativeVelN *= -restitutionCoefficient;
 
 			//Apply friction to the tangential component of the velocity
+			// From Bridson et al., Robust Treatment of Collisions, Contact and
+			// Friction for Cloth Animation, 2002
+			// http://graphics.stanford.edu/papers/cloth-sig02/cloth.pdf
 			if (relativeVelT.SizeSquared() > 0.0f)
 			{
 				double frictionScale = FMath::Max(1.0 - m_frictionCoefficient * deltaRelativeVelN.Size() / relativeVelT.Size(), 0.0);
@@ -88,6 +91,7 @@ void ACollider::GetQueryResult(const FVector& queryPoint, ColliderQueryResult* r
 	result->point = ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
 	result->normal = m_mesh->GetUpVector(); //get the normal
 	//UE_LOG(LogTemp, Warning, TEXT("Apparently, the normal is: %s"), result.ToString());
+	m_linearVelocity = (result->normal == FVector(0, 0, 1)) ? FVector(0.0) : result->normal;
 	result->velocity = VelocityAt(queryPoint); 
 }
 

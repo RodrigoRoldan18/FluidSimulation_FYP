@@ -30,7 +30,7 @@ AFluidSimulation_FYPGameModeBase::AFluidSimulation_FYPGameModeBase()
 //The default initialisation will have 1000 particles in an area of 100 by 100 from the origin.
 void AFluidSimulation_FYPGameModeBase::initSimulation()
 {
-	resize(m_numOfParticles);
+	resize(GetNumberOfParticles());
 
 	//return;
 
@@ -81,8 +81,8 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 	m_neighbourLists.SetNumZeroed(GetNumberOfParticles());
 
 	auto particles = m_particles;
-	for (size_t i = 0; i < GetNumberOfParticles(); ++i)
-	{
+	size_t n = particles.Num();
+	ParallelFor(n, [&](size_t i) {
 		FVector origin = particles[i]->GetParticlePosition();
 		m_neighbourLists[i].Empty();
 
@@ -93,14 +93,14 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 				/*if (i == 723)
 				{
 					UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
-				}*/		
+				}*/
 			}
-		});
+			});
 		/*if (i == 723)
 		{
 			UE_LOG(LogTemp, Warning, TEXT("Particle %i has %i particle neighbours"), i, m_neighbourLists[i].Num());
 		}*/
-	}
+		});
 }
 
 FVector AFluidSimulation_FYPGameModeBase::Interpolate(const FVector& origin, const TArray<FVector>& values) const
@@ -140,7 +140,7 @@ double AFluidSimulation_FYPGameModeBase::Interpolate(const FVector& origin, cons
 void AFluidSimulation_FYPGameModeBase::UpdateDensities()
 {
 	//Async(EAsyncExecution::Thread, [&]() {
-	size_t n = GetNumberOfParticles();
+	size_t n = m_particles.Num();
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 	//for (size_t i = 0; i < n; i++)		
@@ -217,6 +217,12 @@ double AFluidSimulation_FYPGameModeBase::LaplacianAt(size_t i, const TArray<doub
 void AFluidSimulation_FYPGameModeBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//STAGE 1 - MEASURE DENSITY WITH PARTICLES' CURRENT LOCATIONS
+
+	BuildNeighbourSearcher();
+	BuildNeighbourLists();
+	UpdateDensities();
 
 	m_physicsSolver->OnAdvanceTimeStep(DeltaTime);
 	//UE_LOG(LogTemp, Warning, TEXT("DeltaTime: %f"), DeltaTime);

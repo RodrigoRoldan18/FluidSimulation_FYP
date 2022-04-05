@@ -93,7 +93,7 @@ void APCISPH_Solver::onBeginAdvanceTimeStep()
 {
 	AParticleSystemSolver::onBeginAdvanceTimeStep();
 
-	size_t n = m_ptrParticles->Num();
+	size_t n = m_gameMode->GetNumberOfParticles();
 
 	//Initialise buffers
 	m_tempPositions.Reserve(n);
@@ -109,7 +109,7 @@ void APCISPH_Solver::onBeginAdvanceTimeStep()
 
 void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 {
-	const size_t n = m_ptrParticles->Num();
+	size_t n = m_gameMode->GetNumberOfParticles();
 	const double targetDensity = m_gameMode->GetTargetDensity();
 	const double mass = (*m_ptrParticles)[0]->kMass;
 	const double delta = computeDelta(timeStepInSeconds); //the scalar maps the density to the optimal pressure that cancels out density error.
@@ -121,6 +121,8 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 	//Initialise buffers
 	ds.Reserve(n);
 	ds.SetNumZeroed(n);
+
+	n = m_ptrParticles->Num();
 
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
