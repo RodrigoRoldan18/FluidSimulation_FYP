@@ -60,7 +60,8 @@ void AParticleSystemSolver::endAdvanceTimeStep(double timeIntervalInSeconds)
 		});
 
 	//this will dampen any noticeable noises (DISABLED FOR NOW BECAUSE IT'S CAUSING ISSUES)
-	//computePseudoViscosity(timeIntervalInSeconds);
+	//if (m_isViscous)
+	//	computePseudoViscosity(timeIntervalInSeconds);
 }
 
 void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
@@ -104,6 +105,8 @@ void AParticleSystemSolver::initPhysicsSolver(TArray<AFluidParticle*>* ptrPartic
 {
 	m_ptrParticles = ptrParticles;
 	m_gameMode = gameMode;
+	if (m_gameMode)
+		m_isViscous = m_gameMode->IsFluidViscous();
 
 	TArray<AActor*> foundColliders;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACollider::StaticClass(), foundColliders);
@@ -168,7 +171,8 @@ void AParticleSystemSolver::accumulateForces(double timeStepInSeconds)
 	//STAGE 2 & 3	
 	accumulatePressureForce(timeStepInSeconds);
 	//STAGE 4
-	accumulateNonPressureForces(timeStepInSeconds);
+	if (m_isViscous)
+		accumulateNonPressureForces(timeStepInSeconds);
 	//STAGE 5
 	accumulateExternalForces(timeStepInSeconds);
 }

@@ -247,7 +247,8 @@ void APCISPH_Solver::accumulateForces(double timeStepInSeconds)
 	//STAGE 5
 	accumulateExternalForces(timeStepInSeconds);
 	//STAGE 4
-	accumulateNonPressureForces(timeStepInSeconds);
+	if (m_isViscous)
+		accumulateNonPressureForces(timeStepInSeconds);
 	//STAGE 2 & 3	
 	accumulatePressureForce(timeStepInSeconds);
 }

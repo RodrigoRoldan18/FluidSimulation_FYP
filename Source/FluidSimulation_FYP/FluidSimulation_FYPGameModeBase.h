@@ -42,6 +42,9 @@ private:
 	bool m_usePCISPHsolver{ true };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
+	bool m_isFluidViscous{ true };
+
+	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	FVector2D m_simulationDimensions { FVector2D(60.0f, 10.0f) };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
@@ -73,6 +76,7 @@ public:
 	double GetKernelRadius() const { return m_kernelRadius; }
 	double GetTargetSpacing() const { return m_targetSpacing; }
 	bool IsUsingPCISPH() const { return m_usePCISPHsolver; }
+	bool IsFluidViscous() const { return m_isFluidViscous; }
 	TArray<TArray<size_t>>* GetNeighbourLists() { return &m_neighbourLists; }
 
 	//Called every frame
