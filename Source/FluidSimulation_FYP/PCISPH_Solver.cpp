@@ -143,8 +143,8 @@ void APCISPH_Solver::accumulatePressureForce(double timeStepInSeconds)
 	{
 		//Predict velocity and position (perform time integration from the current state to the temp state)
 		ParallelFor(n, [&](size_t i) {
-			FVector predictVel = (*m_ptrParticles)[i]->GetParticleVelocity() + timeStepInSeconds / mass *
-				((*m_ptrParticles)[i]->GetParticleForce() + m_tempPressureForces[i]);
+			FVector predictVel = (*m_ptrParticles)[i]->GetParticleVelocity() + timeStepInSeconds *
+				((*m_ptrParticles)[i]->GetParticleForce() + m_tempPressureForces[i]) / mass;
 
 			FVector predictPos = (*m_ptrParticles)[i]->GetParticlePosition() + timeStepInSeconds * predictVel;
 
