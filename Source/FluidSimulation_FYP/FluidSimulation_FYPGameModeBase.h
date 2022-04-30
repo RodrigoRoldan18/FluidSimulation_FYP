@@ -36,7 +36,7 @@ private:
 	double m_kernelRadiusOverTargetSpacing{ 1.8 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	int32 m_numOfParticles{ 5000 };
+	int32 m_numOfParticles{ 6000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	bool m_usePCISPHsolver{ true };
@@ -45,7 +45,7 @@ private:
 	bool m_isFluidViscous{ true };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	FVector2D m_simulationDimensions { FVector2D(60.0f, 10.0f) };
+	FVector2D m_simulationDimensions { FVector2D(40.0f, 10.0f) };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	TSubclassOf<class AFluidParticle> ParticleBP;

@@ -91,7 +91,7 @@ void APCISPH_Solver::computePressureGradientForce(double timeStepInSeconds, cons
 
 void APCISPH_Solver::onBeginAdvanceTimeStep()
 {
-	AParticleSystemSolver::onBeginAdvanceTimeStep();
+	//AParticleSystemSolver::onBeginAdvanceTimeStep();
 
 	size_t n = m_gameMode->GetNumberOfParticles();
 

@@ -40,7 +40,7 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 	int numLevel = 1;
 	int indexToResetPosition = 0;
 
-	for (size_t i = 0; i < 3000; i++)
+	for (size_t i = 0; i < 4000; i++)
 	{
 		if (kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)) > m_simulationDimensions.X)
 		{
@@ -55,7 +55,7 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 			indexToResetPosition = i - 1;
 		}
 		//10.0f on X and Y moves the particles more to the middle, 2.0f on Z is to make them float a bit
-		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)) + 10.0f, kParticleRadius * numColumn + 10.0f, kParticleRadius * numLevel + 2.0f);
+		newParticleLocation = FVector(kParticleRadius * (i - indexToResetPosition - (particleLimitX * numColumn)) + 10.0f, kParticleRadius * numColumn + 10.0f, kParticleRadius * numLevel + 4.0f);
 
 		AFluidParticle* newParticle = GetWorld()->SpawnActor<AFluidParticle>(ParticleBP, newParticleLocation, FRotator().ZeroRotator);
 		newParticle->SetParticlePosition(newParticleLocation);

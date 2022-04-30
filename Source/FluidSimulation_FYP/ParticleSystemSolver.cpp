@@ -21,8 +21,8 @@ void AParticleSystemSolver::beginAdvanceTimeStep()
 {
 	//Allocate buffers
 	size_t n = m_gameMode->GetNumberOfParticles();
-	m_newPositions.Reserve(n);
-	m_newVelocities.Reserve(n);
+	//m_newPositions.Reserve(n);
+	//m_newVelocities.Reserve(n);
 	m_newPositions.SetNumZeroed(n);
 	m_newVelocities.SetNumZeroed(n);
 
@@ -36,13 +36,10 @@ void AParticleSystemSolver::beginAdvanceTimeStep()
 		Mutex.Unlock();
 		});
 
-	//need to update density prior to any SPH operations
-	if (m_gameMode == nullptr)
+	if (m_gameMode->IsUsingPCISPH())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("game mode pointer isn't initialised"));
-		return;
+		onBeginAdvanceTimeStep();
 	}
-	onBeginAdvanceTimeStep();
 }
 
 void AParticleSystemSolver::endAdvanceTimeStep(double timeIntervalInSeconds)
@@ -139,8 +136,14 @@ void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
 		UE_LOG(LogTemp, Warning, TEXT("particles array is empty"));
 		return;
 	}
+	if (m_gameMode == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("game mode pointer isn't initialised"));
+		return;
+	}
 	beginAdvanceTimeStep();
 
+	//FOR SOME REASON, CRASHES BY TRYING TO ACCESS A FUNCTION. IT SAYS ACCESS VIOLATION
 	accumulateForces(timeIntervalInSeconds);
 	timeIntegration(timeIntervalInSeconds);
 	
