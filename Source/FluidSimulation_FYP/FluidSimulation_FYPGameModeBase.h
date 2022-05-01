@@ -42,7 +42,7 @@ private:
 	bool m_usePCISPHsolver{ true };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	bool m_isFluidViscous{ true };
+	bool m_isFluidViscous{ false };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	bool m_showDebugText{ false };
