@@ -81,7 +81,6 @@ FVector ACollider::ClosestPoint(const FVector& point) const
 	Mutex.Lock();
 	FVector closestPointResult = r - FVector::DotProduct(m_mesh->GetUpVector(), r) * m_mesh->GetUpVector() + m_mesh->GetComponentLocation();
 	Mutex.Unlock();
-	//UE_LOG(LogTemp, Warning, TEXT("Apparently, m_location is: %s"), *m_location.ToString());
 	return closestPointResult;
 }
 
@@ -90,7 +89,6 @@ void ACollider::GetQueryResult(const FVector& queryPoint, ColliderQueryResult* r
 	result->distance = ClosestDistance(queryPoint); //Get closest distance from querypoint to the mesh
 	result->point = ClosestPoint(queryPoint); //get the closest point on the mesh to the querypoint
 	result->normal = m_mesh->GetUpVector(); //get the normal
-	//UE_LOG(LogTemp, Warning, TEXT("Apparently, the normal is: %s"), result.ToString());
 	m_linearVelocity = (result->normal == FVector(0, 0, 1)) ? FVector(0.0) : result->normal;
 	result->velocity = VelocityAt(queryPoint); 
 }

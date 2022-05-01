@@ -75,18 +75,20 @@ void AParticleSystemSolver::timeIntegration(double timeIntervalInSeconds)
 		FVector& newVelocity = m_newVelocities[i];
 		newVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() + timeIntervalInSeconds *
 			(*m_ptrParticles)[i]->GetParticleForce() / (*m_ptrParticles)[i]->kMass;
-		/*if (i == 723)
+		if (m_showDebugText)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 NEW VELOCITY: %s"), *newVelocity.ToString());
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 NEW VELOCITY: %s"), *newVelocity.ToString());
+		}
 
 		//Integrate position.
 		FVector& newPosition = m_newPositions[i];
 		newPosition = (*m_ptrParticles)[i]->GetParticlePosition() + timeIntervalInSeconds * newVelocity;
-		/*if (i == 723)
+		if (m_showDebugText)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 NEW POSITION: %s"), *(*m_ptrParticles)[i]->GetParticlePosition().ToString());
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 NEW POSITION: %s"), *(*m_ptrParticles)[i]->GetParticlePosition().ToString());
+		}
 	});	
 }
 
@@ -103,7 +105,10 @@ void AParticleSystemSolver::initPhysicsSolver(TArray<AFluidParticle*>* ptrPartic
 	m_ptrParticles = ptrParticles;
 	m_gameMode = gameMode;
 	if (m_gameMode)
+	{
 		m_isViscous = m_gameMode->IsFluidViscous();
+		m_showDebugText = m_gameMode->IsShowingDebugText();
+	}
 
 	TArray<AActor*> foundColliders;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACollider::StaticClass(), foundColliders);
@@ -121,7 +126,8 @@ void AParticleSystemSolver::initPhysicsSolver(TArray<AFluidParticle*>* ptrPartic
 		m_emitter = castEmitter;
 		m_emitter->Initialise(ptrParticles);
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("we have %i colliders in the world"), m_colliders.Num());
+	if (m_showDebugText)
+		UE_LOG(LogTemp, Warning, TEXT("we have %i colliders in the world"), m_colliders.Num());
 }
 
 void AParticleSystemSolver::OnAdvanceTimeStep(double timeIntervalInSeconds)
@@ -196,10 +202,11 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 		//Wind forces
 		FVector sampleVectorFieldResult = SampleVectorField((*m_ptrParticles)[i]->GetParticlePosition(), m_kWind);
 
-		/*if (i == 3)
+		if (m_showDebugText)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("The vector field result for particle %i is x: %f y: %f z: %f"), i, sampleVectorFieldResult.X, sampleVectorFieldResult.Y, sampleVectorFieldResult.Z);
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("The vector field result for particle %i is x: %f y: %f z: %f"), i, sampleVectorFieldResult.X, sampleVectorFieldResult.Y, sampleVectorFieldResult.Z);
+		}
 		FVector relativeVelocity = (*m_ptrParticles)[i]->GetParticleVelocity() - sampleVectorFieldResult;
 
 		force += -m_dragCoefficient * relativeVelocity;
@@ -207,10 +214,11 @@ void AParticleSystemSolver::accumulateExternalForces(double timeStepInSeconds)
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticleForce((*m_ptrParticles)[i]->GetParticleForce() + force);
 		Mutex.Unlock();
-		/*if (i == 723)
+		if (m_showDebugText)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 external FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 external FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+		}
 	});
 }
 
@@ -252,10 +260,11 @@ void AParticleSystemSolver::accumulatePressureForce(double timeStepInSeconds)
 				Mutex.Unlock();
 			}
 		}
-		/*if (i == 723)
+		if (m_showDebugText)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
-		}*/		
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 pressure FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+		}	
 		
 	});	
 }
@@ -277,10 +286,11 @@ void AParticleSystemSolver::computePressure()
 		Mutex.Lock();
 		(*m_ptrParticles)[i]->SetParticlePressure(pressure);
 		Mutex.Unlock();
-		/*if (i == 723)
+		if (m_showDebugText)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 PRESSURE: %f"), (*m_ptrParticles)[i]->GetParticlePressure());
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 PRESSURE: %f"), (*m_ptrParticles)[i]->GetParticlePressure());
+		}
 		
 	});	
 }
@@ -309,10 +319,11 @@ void AParticleSystemSolver::accumulateViscosityForce()
 			(*m_ptrParticles)[i]->SetParticleForce(viscosityForceResult);
 			Mutex.Unlock();
 		}
-		/*if (i == 723)
+		if (m_showDebugText)
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 viscosity FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 viscosity FORCE: %s"), *(*m_ptrParticles)[i]->GetParticleForce().ToString());
+		}
 						
 	});
 }

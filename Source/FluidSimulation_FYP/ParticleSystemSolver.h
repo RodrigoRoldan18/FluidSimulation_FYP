@@ -59,6 +59,7 @@ protected:
 	//zero means clamping, one means do nothing
 	double m_negaitvePressureScale{ 0.0 };
 	bool m_isViscous{ false };
+	bool m_showDebugText{ false };
 
 	virtual void onBeginAdvanceTimeStep();
 	virtual void accumulateForces(double timeStepInSeconds);

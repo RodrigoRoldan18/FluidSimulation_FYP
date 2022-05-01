@@ -45,6 +45,9 @@ private:
 	bool m_isFluidViscous{ true };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
+	bool m_showDebugText{ false };
+
+	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	FVector2D m_simulationDimensions { FVector2D(40.0f, 10.0f) };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
@@ -66,7 +69,7 @@ public:
 	//Returns interpolated scalar data. Could be used for density and pressure.
 	double Interpolate(const FVector& origin, const TArray<double>& values) const;
 	void UpdateDensities();
-	double sumOfKernelNearby(const FVector& origin, bool testPrint) const;
+	double sumOfKernelNearby(const FVector& origin) const;
 	FVector GradientAt(size_t i, const TArray<double>& values) const;
 	double LaplacianAt(size_t i, const TArray<double>& values) const;
 
@@ -77,6 +80,7 @@ public:
 	double GetTargetSpacing() const { return m_targetSpacing; }
 	bool IsUsingPCISPH() const { return m_usePCISPHsolver; }
 	bool IsFluidViscous() const { return m_isFluidViscous; }
+	bool IsShowingDebugText() const { return m_showDebugText; }
 	TArray<TArray<size_t>>* GetNeighbourLists() { return &m_neighbourLists; }
 
 	//Called every frame

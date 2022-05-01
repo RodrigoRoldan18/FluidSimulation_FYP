@@ -61,7 +61,8 @@ void AFluidSimulation_FYPGameModeBase::initSimulation()
 		newParticle->SetParticlePosition(newParticleLocation);
 		m_particles.Push(newParticle);
 	}
-	//UE_LOG(LogTemp, Warning, TEXT("particles in the array at the end: %i"), m_particles.Num());
+	if (IsShowingDebugText())
+		UE_LOG(LogTemp, Warning, TEXT("particles in the array at the end: %i"), m_particles.Num());
 }
 
 void AFluidSimulation_FYPGameModeBase::resize(size_t newNumberOfParticles)
@@ -86,20 +87,22 @@ void AFluidSimulation_FYPGameModeBase::BuildNeighbourLists()
 		FVector origin = particles[i]->GetParticlePosition();
 		m_neighbourLists[i].Empty();
 
-		m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t j, const FVector&) { //kParticleRadius should be m_kernelRadius instead
+		m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t j, const FVector&) {
 			if (i != j)
 			{
 				m_neighbourLists[i].Add(j);
-				/*if (i == 723)
+				if (IsShowingDebugText())
 				{
-					UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
-				}*/
+					if (i == 723)
+						UE_LOG(LogTemp, Warning, TEXT("Particle %i has this particle as neighbour: %i"), i, j);
+				}
 			}
 			});
-		/*if (i == 723)
+		if (IsShowingDebugText())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle %i has %i particle neighbours"), i, m_neighbourLists[i].Num());
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle %i has %i particle neighbours"), i, m_neighbourLists[i].Num());
+		}
 		});
 }
 
@@ -144,31 +147,26 @@ void AFluidSimulation_FYPGameModeBase::UpdateDensities()
 	FCriticalSection Mutex;
 	ParallelFor(n, [&](size_t i) {
 	//for (size_t i = 0; i < n; i++)		
-		double sum = sumOfKernelNearby(m_particles[i]->GetParticlePosition(), i == 723 ? true : false);
+		double sum = sumOfKernelNearby(m_particles[i]->GetParticlePosition());
 		Mutex.Lock();
 		m_particles[i]->SetParticleDensity(m_particles[i]->kMass * sum);
 		Mutex.Unlock();
-		/*if (i == 723)
+		if (IsShowingDebugText())
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Particle 723 DENSITY: %f. The sumOfKernelNearby is: %f"), m_particles[i]->GetParticleDensity(), sum);
-		}*/
+			if (i == 723)
+				UE_LOG(LogTemp, Warning, TEXT("Particle 723 DENSITY: %f. The sumOfKernelNearby is: %f"), m_particles[i]->GetParticleDensity(), sum);
+		}
 		
 	});
 }
 
-double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin, bool testPrint) const
+double AFluidSimulation_FYPGameModeBase::sumOfKernelNearby(const FVector& origin) const
 {
 	double sum = 0.0;
 	FSphStdKernel kernel(m_kernelRadius);
 	m_neighbourSearcher->forEachNearbyPoint(origin, m_kernelRadius, [&](size_t, const FVector& neighbourPos) {
 		double dist = FVector::Distance(origin, neighbourPos);		
 		sum += kernel(dist);
-		if (testPrint)
-		{
-			//UE_LOG(LogTemp, Warning, TEXT("Particle 723 distance: %f"), dist);
-			//UE_LOG(LogTemp, Warning, TEXT("Particle 723 KERNEL distance: %f"), kernel(dist));
-			//SumOfKernel calculations look fine
-		}
 		});
 	return sum;
 }
