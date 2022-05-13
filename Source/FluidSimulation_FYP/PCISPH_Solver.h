@@ -30,4 +30,8 @@ protected:
 	void onBeginAdvanceTimeStep() override;
 	void accumulatePressureForce(double timeStepInSeconds) override;
 	void accumulateForces(double timeStepInSeconds) override;
+
+public:
+	APCISPH_Solver();
+	~APCISPH_Solver() = default;
 };

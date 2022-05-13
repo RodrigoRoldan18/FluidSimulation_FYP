@@ -7,6 +7,11 @@
 #include "BCCLatticePointsGenerator.h"
 #include "Kernels.h"
 
+APCISPH_Solver::APCISPH_Solver()
+{
+	PrimaryActorTick.bCanEverTick = false;
+}
+
 double APCISPH_Solver::computeDelta(double timeStepInSeconds)
 {
 	const double kernelRadius = m_gameMode->GetKernelRadius();

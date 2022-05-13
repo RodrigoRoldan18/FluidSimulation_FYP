@@ -23,7 +23,9 @@ private:
 	const FIntVector kDefaultHashGridResolution{ FIntVector(64) }; //this was set to 10 before
 
 	TArray<class AFluidParticle*> m_particles;
+	UPROPERTY()
 	class AParticleSystemSolver* m_physicsSolver;
+	UPROPERTY()
 	class UNeighbourSearch* m_neighbourSearcher;
 	TArray<TArray<size_t>> m_neighbourLists;
 
@@ -39,10 +41,10 @@ private:
 	int32 m_numOfParticles{ 6000 };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	bool m_usePCISPHsolver{ true };
+	bool m_usePCISPHsolver{ false };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
-	bool m_isFluidViscous{ false };
+	bool m_isFluidViscous{ true };
 
 	UPROPERTY(EditDefaultsOnly, Category = "FluidSimulation")
 	bool m_showDebugText{ false };
